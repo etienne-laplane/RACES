@@ -1,0 +1,23 @@
+start
+- genere le nom : race-RANDOM
+- cree le channel
+- deplace le channel
+- le créateur entre dans la race (en tant que joueur 0)
+
+enter
+- ajoute le joueur non ready dans le match
+
+ready
+- met le joueur a ready
+
+GO
+- si tous les joueurs sont ready, démarre la race 3 2 1 enregistre le temps
+
+done
+forfeit
+notify
+result
+close
+entrants
+time
+
