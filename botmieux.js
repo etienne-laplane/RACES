@@ -80,7 +80,7 @@ bot.on('message', msg => {
 		//TODO : verif qu'on est dans un chan autorisé
 		result(msg);
 	}
-	if(args[0]=="!games"||){
+	if(args[0]=="!games"){
 				if(msg.channel.name!="races"){
 			return;
 		}
@@ -88,6 +88,7 @@ bot.on('message', msg => {
 		games(msg);
 	}
 	if(args[0]=="PGLLCRGKKJ"){
+		msg.reply("Something strange happened...");
 		for(var i=1; i<11;i++){
 			role(msg,i+"");
 		}
