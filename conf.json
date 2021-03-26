@@ -1,4 +1,4 @@
-    {
+{
    "delay": "1250",
    "resultchannels" : "race_results",
    "emptyracetimeout" :"300000",
@@ -7,6 +7,3 @@
    "displayMS" : "false",
    "adminRoleName" : "race_mod"
 }
-
-
-getGameName
