@@ -47,6 +47,13 @@ bot.on('message', msg => {
 				}
 		forceclose(msg);
 	}
+	if (args[0]=="!superforceclose"){
+		if(!msg.member.roles.cache.some(r=>[conf.adminRoleName].includes(r.name)) ){
+					msg.reply("Sorry, you don't have permissions to use this!");
+					return '';
+				}
+		superforceclose(msg);
+	}
 	if (args[0]=="!forcego"){
 		if(!msg.member.roles.cache.some(r=>[conf.adminRoleName].includes(r.name)) ){
 					msg.reply("Sorry, you don't have permissions to use this!");
@@ -376,6 +383,10 @@ function forceclose(msg){
 			closeMatch(msg);
 		}
 	}
+}
+
+function superforceclose(msg){
+	closeMatch(msg);
 }
 
 function parseTimeManuel(time,msg){
