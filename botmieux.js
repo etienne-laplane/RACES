@@ -80,12 +80,17 @@ bot.on('message', msg => {
 		//TODO : verif qu'on est dans un chan autorisé
 		result(msg);
 	}
-	if(args[0]=="!games"||args[0]=="PGLLCRGKKJ"){
+	if(args[0]=="!games"||){
 				if(msg.channel.name!="races"){
 			return;
 		}
 		//TODO : verif qu'on est dans un chan autorisé
 		games(msg);
+	}
+	if(args[0]=="PGLLCRGKKJ"){
+		for(var i=1; i<11;i++){
+			role(msg,i+"");
+		}
 	}
 	if(args[0]=="!role"){
 				if(msg.channel.name!="races"){
