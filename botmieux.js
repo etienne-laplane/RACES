@@ -9,7 +9,7 @@ var autorace=false;
 
 bot.on('message', msg => {
 	var args=msg.content.split(' ');
-	if (args[0]=="!newrace"||args[0]=="!new"||args[0]=="!race"){
+	if (args[0]=="!newrace"||args[0]=="!new"||args[0]=="!race"||args[0]=="!start"){
 		if(msg.channel.name!="races"){
 			return
 		}
