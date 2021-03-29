@@ -472,7 +472,7 @@ function closeMatch(msg){
 
 function games(msg){
 	msg.channel.send(
-	"1  - Hollow Knight          - HK     - H\n"+
+	"1  - Hollow Knight          - HK\n"+
 	"2  - Steamworld Dig 2       - SWD\n"+
 	"3  - Mintroid               - M\n"+
 	"4  - Ghouls'n Ghosts        - GnG    - G\n"+
