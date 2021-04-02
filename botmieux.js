@@ -1,3 +1,4 @@
+const { GraphQLClient, gql  } = require('graphql-request')
 const Discord = require('discord.js');
 var auth = require('./auth.json');
 var conf = require('./conf.json');
@@ -6,8 +7,41 @@ const bot = new Discord.Client();
 var fs = require('fs');
 var match={};
 var autorace=false;
+var update=false;
+var data={ darkQualif: [] };
+
+
+const graphqlclient=new GraphQLClient("https://www.ultimedecathlon.com/graphql")
+const query = gql`query qualified ($episode: Int!, $after: DateTime) {
+  darkQualif (episode: $episode, after: $after) {
+    user {
+      username
+      alias
+    }
+    date
+  }
+}`
+
+function graphqlrequestdarkqualif(){
+var variables = {
+  "episode": 45,
+  "after": new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
+}
+graphqlclient.request(query, variables).then(dataresult => data=dataresult);
+update = true;
+}
+setInterval(graphqlrequestdarkqualif, 300000);
 
 bot.on('message', msg => {
+	if(update){
+		update=false;
+		channeltosend=msg.guild.channels.cache.find(channel => channel.name === 'hall-of-fame');
+		console.log(data);
+		data.darkQualif.forEach(function(qualifie){
+			console.log(qualifie.user.username);
+			channeltosend.send( new Date().toISOString().replace(/T/, ' ').  replace(/\..+/, '')+" - "+qualifie.user.username,{code:true});
+		});
+	}
 	var args=msg.content.split(' ');
 	if (args[0]=="!newrace"||args[0]=="!new"||args[0]=="!race"||args[0]=="!start"){
 		if(msg.channel.name!="races"){
@@ -21,6 +55,7 @@ bot.on('message', msg => {
 	if(args[0]=="!entrants"){
 		entrants(msg);
 	}
+	//reasy
 	if (args[0]=="!ready"){
 		ready(msg);
 	}
@@ -36,6 +71,7 @@ bot.on('message', msg => {
 	if (args[0]=="!undone"){
 		undone(msg, args[1]);
 	}
+	//dead ded rip
 	if (args[0]=="!forfeit"){
 		forfeit(msg);
 	}
