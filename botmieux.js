@@ -11,6 +11,7 @@ var update=false;
 var data={ darkQualif: [] };
 var games =[215,216,217,218,219,220,221,222,223,224];
 var PBtosend=[];
+var pbupdated = false;
 
 
 const graphqlclient=new GraphQLClient("https://www.ultimedecathlon.com/graphql")
@@ -59,6 +60,7 @@ function graphqlGS(){
 		if(dataGS.ChampionshipGameResults[0]!=null){
 			if(toupdate(game,dataGS.ChampionshipGameResults[0])){
 				PBtosend.push(gamenametostring(game)+" - " +dataGS.ChampionshipGameResults[0].submittedTime.stringTime + "("+dataGS.ChampionshipGameResults[0].submittedTime.score+")- " + dataGS.ChampionshipGameResults[0].user.username);
+				console.log(gamenametostring(game)+" - " +dataGS.ChampionshipGameResults[0].submittedTime.stringTime + "("+dataGS.ChampionshipGameResults[0].submittedTime.score+")- " + dataGS.ChampionshipGameResults[0].user.username);
 				writegame(game,dataGS.ChampionshipGameResults[0]);
 			}
 		}
