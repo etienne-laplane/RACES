@@ -9,6 +9,8 @@ var match={};
 var autorace=false;
 var update=false;
 var data={ darkQualif: [] };
+var games =[215,216,217,218,219,220,221,222,223,224];
+var PBtosend=[];
 
 
 const graphqlclient=new GraphQLClient("https://www.ultimedecathlon.com/graphql")
@@ -22,15 +24,51 @@ const query = gql`query qualified ($episode: Int!, $after: DateTime) {
   }
 }`
 
+const queryGS = gql`query firstGame ($gameId: Int!) {
+  ChampionshipGameResults (game: $gameId, season: 9) {
+    user {
+      username
+      alias
+    }
+    submittedTime {
+      stringTime
+      score
+    }
+  }
+}`
+
+
 function graphqlrequestdarkqualif(){
-var variables = {
-  "episode": 45,
-  "after": new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
-}
+	d=new Date();
+	d.setHours(d.getHours() - 2);
+	var variables = {
+		"episode": 45,
+		"after": d.toISOString().replace(/T/, ' ').replace(/\..+/, '')
+	}
+
 graphqlclient.request(query, variables).then(dataresult => data=dataresult);
 update = true;
 }
+
+function graphqlGS(){
+	games.forEach(function(game){
+	var variables = {
+		"gameId": game,
+	}
+	graphqlclient.request(queryGS, variables).then(function(dataresult){dataGS=dataresult;
+		if(dataGS.ChampionshipGameResults[0]!=null){
+			if(toupdate(game,dataGS.ChampionshipGameResults[0])){
+				PBtosend.push(gamenametostring(game)+" - " +dataGS.ChampionshipGameResults[0].submittedTime.stringTime + "("+dataGS.ChampionshipGameResults[0].submittedTime.score+")- " + dataGS.ChampionshipGameResults[0].user.username);
+				writegame(game,dataGS.ChampionshipGameResults[0]);
+			}
+		}
+		} 
+		);
+	}
+);}
+
 setInterval(graphqlrequestdarkqualif, 300000);
+setInterval(graphqlGS, 300000);
 
 bot.on('message', msg => {
 	if(update){
@@ -42,6 +80,10 @@ bot.on('message', msg => {
 			channeltosend.send( new Date().toISOString().replace(/T/, ' ').  replace(/\..+/, '')+" - "+qualifie.user.username,{code:true});
 		});
 	}
+	PBtosend.forEach(function(pb){
+		channeltosend=msg.guild.channels.cache.find(channel => channel.name === 'guerre-de-succession');
+		channeltosend.send(pb,{code:true});
+	});
 	var args=msg.content.split(' ');
 	if (args[0]=="!newrace"||args[0]=="!new"||args[0]=="!race"||args[0]=="!start"){
 		if(msg.channel.name!="races"){
@@ -606,7 +648,54 @@ function help(msg){
 	,{code:true});
 }
 
+function gamenametostring(id){
+	switch(id){
+				case 215 : 
+		return "Hollow Knight";
+		break;
+				case 216 : 
+		return "Steamworld Dig 2";
+		break;
+				case 217 : 
+		return "Mintroid";
+		break;
+				case 218 : 
+		return "Ghouls'n Ghosts";
+		break;
+				case 219 : 
+		return "Unworthy";
+		break;
+				case 220 : 
+		return "Hamsterball";
+		break;
+				case 221 : 
+		return "Kururin Squash!";
+		break;
+				case 222 : 
+		return "Super Monkey Ball Adventures";
+		break;
+				case 223 : 
+		return "Trials Fusion";
+		break;
+		case 224 : 
+		return "Vectronom";
+		break;
+	}
+}
+//cas 1; null
+function toupdate(id,ChampionshipGameResults0){
+	let currentMatch = JSON.parse(fs.readFileSync('./'+id+'.json'));
+	if(ChampionshipGameResults0.submittedTime.stringTime!=currentMatch.submittedTime.stringTime){
+	 return true;
+	}
+	return false;
+}
 
+function writegame(id,ChampionshipGameResults0){
+	fs.writeFile('./'+id+'.json', JSON.stringify(ChampionshipGameResults0), function (err) {
+		if (err) return console.log(err);
+	});
+}
 
 bot.on("error", (e) => console.error(e));
 bot.on("warn", (e) => console.warn(e));
