@@ -62,6 +62,7 @@ function graphqlGS(){
 				PBtosend.push(gamenametostring(game)+" - " +dataGS.ChampionshipGameResults[0].submittedTime.stringTime + "("+dataGS.ChampionshipGameResults[0].submittedTime.score+")- " + dataGS.ChampionshipGameResults[0].user.username);
 				console.log(gamenametostring(game)+" - " +dataGS.ChampionshipGameResults[0].submittedTime.stringTime + "("+dataGS.ChampionshipGameResults[0].submittedTime.score+")- " + dataGS.ChampionshipGameResults[0].user.username);
 				writegame(game,dataGS.ChampionshipGameResults[0]);
+				pbupdated=true;
 			}
 		}
 		} 
@@ -80,10 +81,14 @@ bot.on('message', msg => {
 			channeltosend.send( qualifie.date+" - "+qualifie.user.username,{code:true});
 		});
 	}
+	if(pbupdated){
 	PBtosend.forEach(function(pb){
 		channeltosend=msg.guild.channels.cache.find(channel => channel.name === 'guerre-de-succession');
 		channeltosend.send(pb,{code:true});
 	});
+	pbupdated=false;
+	PBtosend=[];
+	}
 	var args=msg.content.split(' ');
 	if (args[0]=="!newrace"||args[0]=="!new"||args[0]=="!race"||args[0]=="!start"){
 		if(msg.channel.name!="races"){
