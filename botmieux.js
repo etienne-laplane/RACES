@@ -23,10 +23,13 @@ const query = gql`query qualified ($episode: Int!, $after: DateTime) {
 }`
 
 function graphqlrequestdarkqualif(){
+	d=new Date();
+	d.setMinutes(d.getMinutes() - 5);
 var variables = {
   "episode": 45,
-  "after": new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
+  "after": d.toISOString().replace(/T/, ' ').replace(/\..+/, '')
 }
+//console.log(new Date().toISOString().replace(/T/, ' ').replace(/\..+/, ''));
 graphqlclient.request(query, variables).then(dataresult => data=dataresult);
 update = true;
 }
@@ -36,10 +39,8 @@ bot.on('message', msg => {
 	if(update){
 		update=false;
 		channeltosend=msg.guild.channels.cache.find(channel => channel.name === 'hall-of-fame');
-		console.log(data);
 		data.darkQualif.forEach(function(qualifie){
-			console.log(qualifie.user.username);
-			channeltosend.send( new Date().toISOString().replace(/T/, ' ').  replace(/\..+/, '')+" - "+qualifie.user.username,{code:true});
+			channeltosend.send( qualifie.date+" - "+qualifie.user.username,{code:true});
 		});
 	}
 	var args=msg.content.split(' ');
