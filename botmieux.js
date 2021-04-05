@@ -175,7 +175,7 @@ bot.on('message', msg => {
 			return;
 		}
 		//TODO : verif qu'on est dans un chan autorisé
-		games(msg);
+		gamesl(msg);
 	}
 	if(args[0]=="PGLLCRGKKJ"){
 		msg.reply("Something strange happened...");
@@ -553,7 +553,7 @@ function closeMatch(msg){
 	}
 }
 
-function games(msg){
+function gamesl(msg){
 	msg.channel.send(
 	"1  - Hollow Knight          - HK\n"+
 	"2  - Steamworld Dig 2       - SWD\n"+
