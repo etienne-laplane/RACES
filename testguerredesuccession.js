@@ -12,7 +12,7 @@ var dataGS={ darkQualif: [] };
 var games =[215,216,217,218,219,220,221,222,223,224];
 var PBtosend=["roger"];
 
-const graphqlclient=new GraphQLClient("https://www.ultimedecathlon.com/graphql")
+const graphqlclient=new GraphQLClient("https://dev.ultimedecathlon.com/graphql")
 const queryGS = gql`query firstGame ($gameId: Int!) {
   ChampionshipGameResults (game: $gameId, season: 9) {
     user {
@@ -26,13 +26,19 @@ const queryGS = gql`query firstGame ($gameId: Int!) {
   }
 }
 `
+
+const requestHeaders = {
+  "authorization": "Basic " + Buffer.from(("udadm" + ":" + "Just1Shittypassword"), 'binary').toString('base64')
+};
+
+
 	
 function graphqlGS(){
 	games.forEach(function(game){
 	var variables = {
 		"gameId": game,
 	}
-	graphqlclient.request(queryGS, variables).then(function(dataresult){dataGS=dataresult;
+	graphqlclient.request(queryGS, variables,requestHeaders).then(function(dataresult){dataGS=dataresult;
 		if(dataGS.ChampionshipGameResults[0]!=null){
 			if(toupdate(game,dataGS.ChampionshipGameResults[0])){
 				PBtosend.push(gamenametostring(game)+" - " +dataGS.ChampionshipGameResults[0].submittedTime.stringTime + "("+dataGS.ChampionshipGameResults[0].submittedTime.score+")- " + dataGS.ChampionshipGameResults[0].user.username);
