@@ -47,8 +47,15 @@ var variables = {
   "after": d.toISOString().replace(/T/, ' ').replace(/\..+/, '')
 }
 //console.log(new Date().toISOString().replace(/T/, ' ').replace(/\..+/, ''));
-graphqlclient.request(query, variables).then(dataresult => data=dataresult);
-update = true;
+graphqlclient.request(query, variables).then(function(dataresult){
+	data=dataresult
+		update=false;
+		channeltosend=bot.channels.cache.find(channel => channel.name === 'hall-of-fame');
+		data.darkQualif.forEach(function(qualifie){
+			channeltosend.send( qualifie.date+" - "+qualifie.user.username,{code:true});
+		});
+	
+});
 }
 
 function graphqlGS(){
@@ -63,6 +70,14 @@ function graphqlGS(){
 				console.log(gamenametostring(game)+" - " +dataGS.ChampionshipGameResults[0].submittedTime.stringTime + "("+dataGS.ChampionshipGameResults[0].submittedTime.score+")- " + dataGS.ChampionshipGameResults[0].user.username);
 				writegame(game,dataGS.ChampionshipGameResults[0]);
 				pbupdated=true;
+				if(pbupdated){
+				PBtosend.forEach(function(pb){
+					channeltosendbot.channels.cache.find(channel => channel.name === 'guerre-de-succession');
+					channeltosend.send(pb,{code:true});
+				});
+				pbupdated=false;
+				PBtosend=[];
+				}
 			}
 		}
 		} 
@@ -74,21 +89,7 @@ setInterval(graphqlrequestdarkqualif, 300000);
 setInterval(graphqlGS, 300000);
 
 bot.on('message', msg => {
-	if(update){
-		update=false;
-		channeltosend=msg.guild.channels.cache.find(channel => channel.name === 'hall-of-fame');
-		data.darkQualif.forEach(function(qualifie){
-			channeltosend.send( qualifie.date+" - "+qualifie.user.username,{code:true});
-		});
-	}
-	if(pbupdated){
-	PBtosend.forEach(function(pb){
-		channeltosend=msg.guild.channels.cache.find(channel => channel.name === 'guerre-de-succession');
-		channeltosend.send(pb,{code:true});
-	});
-	pbupdated=false;
-	PBtosend=[];
-	}
+
 	var args=msg.content.split(' ');
 	if (args[0]=="!newrace"||args[0]=="!new"||args[0]=="!race"||args[0]=="!start"){
 		if(msg.channel.name!="races"){
