@@ -72,7 +72,7 @@ function graphqlGS(){
 				pbupdated=true;
 				if(pbupdated){
 				PBtosend.forEach(function(pb){
-					channeltosendbot.channels.cache.find(channel => channel.name === 'guerre-de-succession');
+					channeltosend=bot.channels.cache.find(channel => channel.name === 'guerre-de-succession');
 					channeltosend.send(pb,{code:true});
 				});
 				pbupdated=false;
