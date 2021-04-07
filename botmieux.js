@@ -10,6 +10,7 @@ var autorace=false;
 var update=false;
 var data={ darkQualif: [] };
 var games =[215,216,217,218,219,220,221,222,223,224];
+var gameslight = [205,206,207,208,209,210,211,212,213,214];
 var PBtosend=[];
 var pbupdated = false;
 
@@ -85,8 +86,36 @@ function graphqlGS(){
 	}
 );}
 
+function graphqlLightGod(){
+	gameslight.forEach(function(game){
+	var variables = {
+		"gameId": game,
+	}
+	graphqlclient.request(queryGS, variables).then(function(dataresult){dataGS=dataresult;
+		if(dataGS.ChampionshipGameResults[0]!=null){
+			if(toupdate(game,dataGS.ChampionshipGameResults[0])){
+				PBtosend.push(gamenametostring(game-10)+" - " +dataGS.ChampionshipGameResults[0].submittedTime.stringTime + "("+dataGS.ChampionshipGameResults[0].submittedTime.score+")- " + dataGS.ChampionshipGameResults[0].user.username);
+				console.log(gamenametostring(game)+" - " +dataGS.ChampionshipGameResults[0].submittedTime.stringTime + "("+dataGS.ChampionshipGameResults[0].submittedTime.score+")- " + dataGS.ChampionshipGameResults[0].user.username);
+				writegame(game,dataGS.ChampionshipGameResults[0]);
+				pbupdated=true;
+				if(pbupdated){
+				PBtosend.forEach(function(pb){
+					channeltosendbot.channels.cache.find(channel => channel.name === 'guerre-de-succession');
+					channeltosend.send(pb,{code:true});
+				});
+				pbupdated=false;
+				PBtosend=[];
+				}
+			}
+		}
+		} 
+		);
+	}
+);}
+
 setInterval(graphqlrequestdarkqualif, 300000);
 setInterval(graphqlGS, 300000);
+setInterval(graphqlLightGod,300000);
 
 bot.on('message', msg => {
 
