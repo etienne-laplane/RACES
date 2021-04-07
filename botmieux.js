@@ -100,7 +100,7 @@ function graphqlLightGod(){
 				pbupdated=true;
 				if(pbupdated){
 				PBtosend.forEach(function(pb){
-					channeltosendbot.channels.cache.find(channel => channel.name === 'guerre-de-succession');
+					channeltosendbot.channels.cache.find(channel => channel.name === 'light-arena');
 					channeltosend.send(pb,{code:true});
 				});
 				pbupdated=false;
