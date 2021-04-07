@@ -94,8 +94,8 @@ function graphqlLightGod(){
 	graphqlclient.request(queryGS, variables).then(function(dataresult){dataGS=dataresult;
 		if(dataGS.ChampionshipGameResults[0]!=null){
 			if(toupdate(game,dataGS.ChampionshipGameResults[0])){
-				PBtosend.push(gamenametostring(game-10)+" - " +dataGS.ChampionshipGameResults[0].submittedTime.stringTime + "("+dataGS.ChampionshipGameResults[0].submittedTime.score+")- " + dataGS.ChampionshipGameResults[0].user.username);
-				console.log(gamenametostring(game)+" - " +dataGS.ChampionshipGameResults[0].submittedTime.stringTime + "("+dataGS.ChampionshipGameResults[0].submittedTime.score+")- " + dataGS.ChampionshipGameResults[0].user.username);
+				PBtosend.push(gamenametostring(game+10)+" - " +dataGS.ChampionshipGameResults[0].submittedTime.stringTime + "("+dataGS.ChampionshipGameResults[0].submittedTime.score+")- " + dataGS.ChampionshipGameResults[0].user.username);
+				console.log(gamenametostring(game+10)+" - " +dataGS.ChampionshipGameResults[0].submittedTime.stringTime + "("+dataGS.ChampionshipGameResults[0].submittedTime.score+")- " + dataGS.ChampionshipGameResults[0].user.username);
 				writegame(game,dataGS.ChampionshipGameResults[0]);
 				pbupdated=true;
 				if(pbupdated){
