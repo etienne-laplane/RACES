@@ -12,8 +12,16 @@ var data={ darkQualif: [] };
 var games =[215,216,217,218,219,220,221,222,223,224];
 var gameslight = [205,206,207,208,209,210,211,212,213,214];
 var PBtosend=[];
-var PBlighttosend=[];
 var pbupdated = false;
+const WebHookListener  = require('twitch-webhooks');
+const ApiClient =require('twitch');
+const twitchauth =require('twitch-auth');
+var LIVE=false;
+const clientId = '8ebli10ths5tzs7oyeh6wje0riip09';
+const clientSecret = 'xmb8i2cqb8t77rvneoq96wdn1lk9g4';
+const authProvider = new twitchauth.ClientCredentialsAuthProvider(clientId, clientSecret);
+const apiClient = new ApiClient({ authProvider });
+
 
 
 const graphqlclient=new GraphQLClient("https://www.ultimedecathlon.com/graphql")
@@ -40,6 +48,21 @@ const queryGS = gql`query firstGame ($gameId: Int!) {
   }
 }`
 
+function isUDlive(){
+	isStreamLive("ultimedecathlon").then(function(result){
+		if(result&&!LIVE){
+			guildUD=bot.guilds.cache.find(guild => guild.name === 'Ultime Décathlon');
+			guildUD.setIcon('./liveon.png').then(updated => console.log('Updated the guild icon')).catch(console.error);
+			LIVE=true;
+		}
+		if(!result&&LIVE){
+			guildUD=bot.guilds.cache.find(guild => guild.name === 'Ultime Décathlon');
+			guildUD.setIcon('./liveoff.png').then(updated => console.log('Updated the guild icon')).catch(console.error);
+			LIVE=false;
+		}
+	}
+	);
+}
 
 function graphqlrequestdarkqualif(){
 	d=new Date();
@@ -60,6 +83,14 @@ graphqlclient.request(query, variables).then(function(dataresult){
 });
 }
 
+async function isStreamLive(userName) {
+	const user = await apiClient.helix.users.getUserByName(userName);
+	if (!user) {
+		return false;
+	}
+	return await user.getStream()!== null;
+}
+
 function graphqlGS(){
 	games.forEach(function(game){
 	var variables = {
@@ -74,7 +105,7 @@ function graphqlGS(){
 				pbupdated=true;
 				if(pbupdated){
 				PBtosend.forEach(function(pb){
-					channeltosend=bot.channels.cache.find(channel => channel.name === 'guerre-de-succession');
+					channeltosendbot.channels.cache.find(channel => channel.name === 'guerre-de-succession');
 					channeltosend.send(pb,{code:true});
 				});
 				pbupdated=false;
@@ -95,17 +126,17 @@ function graphqlLightGod(){
 	graphqlclient.request(queryGS, variables).then(function(dataresult){dataGS=dataresult;
 		if(dataGS.ChampionshipGameResults[0]!=null){
 			if(toupdate(game,dataGS.ChampionshipGameResults[0])){
-				PBlighttosend.push(gamenametostring(game+10)+" - " +dataGS.ChampionshipGameResults[0].submittedTime.stringTime + "("+dataGS.ChampionshipGameResults[0].submittedTime.score+")- " + dataGS.ChampionshipGameResults[0].user.username);
+				PBtosend.push(gamenametostring(game+10)+" - " +dataGS.ChampionshipGameResults[0].submittedTime.stringTime + "("+dataGS.ChampionshipGameResults[0].submittedTime.score+")- " + dataGS.ChampionshipGameResults[0].user.username);
 				console.log(gamenametostring(game+10)+" - " +dataGS.ChampionshipGameResults[0].submittedTime.stringTime + "("+dataGS.ChampionshipGameResults[0].submittedTime.score+")- " + dataGS.ChampionshipGameResults[0].user.username);
 				writegame(game,dataGS.ChampionshipGameResults[0]);
-				pblightupdated=true;
-				if(pblightupdated){
-				PBlighttosend.forEach(function(pb){
-					channeltosend=bot.channels.cache.find(channel => channel.name === 'light-arena');
+				pbupdated=true;
+				if(pbupdated){
+				PBtosend.forEach(function(pb){
+					channeltosendbot.channels.cache.find(channel => channel.name === 'light-arena');
 					channeltosend.send(pb,{code:true});
 				});
-				pblightupdated=false;
-				PBlighttosend=[];
+				pbupdated=false;
+				PBtosend=[];
 				}
 			}
 		}
@@ -116,7 +147,8 @@ function graphqlLightGod(){
 
 setInterval(graphqlrequestdarkqualif, 300000);
 setInterval(graphqlGS, 300000);
-setInterval(graphqlLightGod,20000);
+setInterval(graphqlLightGod,300000);
+setInterval(isUDlive,90000);
 
 bot.on('message', msg => {
 
@@ -132,6 +164,21 @@ bot.on('message', msg => {
 	}
 	if(args[0]=="!entrants"){
 		entrants(msg);
+	}
+	if(args[0]=="!live"){
+		if(!msg.member.roles.cache.some(r=>[conf.adminRoleName].includes(r.name)) ){
+			live(msg);
+		}
+	}
+	if(args[0]=="!isudlive"){
+		if(!msg.member.roles.cache.some(r=>[conf.adminRoleName].includes(r.name)) ){
+			isStreamLive("ultimedecathlon").then(truc=>console.log(truc));
+		}
+	}
+	if(args[0]=="!nolive"){
+		if(!msg.member.roles.cache.some(r=>[conf.adminRoleName].includes(r.name)) ){
+			nolive(msg);
+		}
 	}
 	//reasy
 	if (args[0]=="!ready"){
@@ -206,7 +253,7 @@ bot.on('message', msg => {
 			return;
 		}
 		//TODO : verif qu'on est dans un chan autorisé
-		gamesl(msg);
+		gameslist(msg);
 	}
 	if(args[0]=="PGLLCRGKKJ"){
 		msg.reply("Something strange happened...");
@@ -235,6 +282,16 @@ function newplayer(id, name, ready){
 	player.ready=ready;
 	return player;
 	
+}
+
+function live(msg){
+	msg.guild.setIcon('./liveon.png').then(updated => console.log('Updated the guild icon')).catch(console.error);
+	LIVE=true;
+}
+
+function nolive(msg){
+	msg.guild.setIcon('./liveoff.png').then(updated => console.log('Updated the guild icon')).catch(console.error);
+	LIVE=false;
 }
 
 function start(msg,name){	
@@ -584,7 +641,7 @@ function closeMatch(msg){
 	}
 }
 
-function gamesl(msg){
+function gameslist(msg){
 	msg.channel.send(
 	"1  - Hollow Knight          - HK\n"+
 	"2  - Steamworld Dig 2       - SWD\n"+
