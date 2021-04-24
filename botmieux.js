@@ -105,7 +105,7 @@ function graphqlGS(){
 				pbupdated=true;
 				if(pbupdated){
 				PBtosend.forEach(function(pb){
-					channeltosendbot.channels.cache.find(channel => channel.name === 'guerre-de-succession');
+					channeltosend=bot.channels.cache.find(channel => channel.name === 'guerre-de-succession');
 					channeltosend.send(pb,{code:true});
 				});
 				pbupdated=false;
@@ -132,7 +132,7 @@ function graphqlLightGod(){
 				pbupdated=true;
 				if(pbupdated){
 				PBtosend.forEach(function(pb){
-					channeltosendbot.channels.cache.find(channel => channel.name === 'light-arena');
+					channeltosend=bot.channels.cache.find(channel => channel.name === 'light-arena');
 					channeltosend.send(pb,{code:true});
 				});
 				pbupdated=false;
@@ -285,6 +285,7 @@ function newplayer(id, name, ready){
 }
 
 function live(msg){
+	console.log("live");
 	msg.guild.setIcon('./liveon.png').then(updated => console.log('Updated the guild icon')).catch(console.error);
 	LIVE=true;
 }
