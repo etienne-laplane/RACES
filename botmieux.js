@@ -3,6 +3,7 @@ const Discord = require('discord.js');
 var auth = require('./auth.json');
 var conf = require('./conf.json');
 var gamelist = require('./games.json');
+var gamerules = require('./gamerules.json');
 const bot = new Discord.Client();
 var fs = require('fs');
 var match={};
@@ -10,7 +11,9 @@ var autorace=false;
 var update=false;
 var data={ darkQualif: [] };
 var games =[215,216,217,218,219,220,221,222,223,224];
+var gamesSort;
 var gameslight = [205,206,207,208,209,210,211,212,213,214];
+var gameslightSort;
 var PBtosend=[];
 var pbupdated = false;
 const WebHookListener  = require('twitch-webhooks');
@@ -21,8 +24,8 @@ const clientId = '8ebli10ths5tzs7oyeh6wje0riip09';
 const clientSecret = 'xmb8i2cqb8t77rvneoq96wdn1lk9g4';
 const authProvider = new twitchauth.ClientCredentialsAuthProvider(clientId, clientSecret);
 const apiClient = new ApiClient({ authProvider });
-
-
+var tournoi={};
+var currentmessageage;
 
 const graphqlclient=new GraphQLClient("https://www.ultimedecathlon.com/graphql")
 const query = gql`query qualified ($episode: Int!, $after: DateTime) {
@@ -64,6 +67,88 @@ function isUDlive(){
 	);
 }
 
+
+function ageDuRecord(id){
+	const start = Date.now();
+	var stats = fs.statSync("./"+id+".json");
+	var mtime = stats.mtime.getTime();;
+	if(Math.floor((start-mtime)/3600000)<10){
+	return "00"+Math.floor((start-mtime)/3600000)+"h";
+	}
+	if(Math.floor((start-mtime)/3600000)<100){
+	return "0"+Math.floor((start-mtime)/3600000)+"h";
+	}
+	if(Math.floor((start-mtime)/3600000)<1000){
+	return Math.floor((start-mtime)/3600000)+"h";
+	}
+	return Math.floor((start-mtime)/3600000)+"h";
+}
+
+function msDuRecord(id){
+	const start = Date.now();
+	var stats = fs.statSync("./"+id+".json");
+	var mtime = stats.mtime.getTime();;
+	return mtime;
+}
+
+function publishrecords(){
+	//tri
+	sortGamesPerAge();
+	sortGamesLightPerAge();
+	var toSend="";
+	//calc les ages
+	//format le message
+	toSend=toSend+"**LIGHT**\n"
+	gameslightSort.forEach(function(id){
+		toSend=toSend+ageDuRecord(id)+" - "+gamenametostring(id+10)+"\n";
+	});
+	toSend=toSend+"**DARK**\n";
+		gamesSort.forEach(function(id){
+		toSend=toSend+ageDuRecord(id)+" - "+gamenametostring(id)+"\n";
+	});
+	channeltosend=bot.channels.cache.find(channel => channel.name === 'archives-du-duc');
+	channeltosend.send(toSend).then(message=>currentmessageage=message);
+
+}
+
+function updaterecords(){
+	//tri
+	sortGamesPerAge();
+	sortGamesLightPerAge();
+	var toSend="";
+	//calc les ages
+	//format le message
+	toSend=toSend+"**LIGHT**\n"
+	gameslightSort.forEach(function(id){
+		toSend=toSend+ageDuRecord(id)+" - "+gamenametostring(id+10)+"\n";
+	});
+	toSend=toSend+"**DARK**\n";
+		gamesSort.forEach(function(id){
+		toSend=toSend+ageDuRecord(id)+" - "+gamenametostring(id)+"\n";
+	});
+	if(currentmessageage==undefined){
+		channeltosend=bot.channels.cache.find(channel => channel.name === 'archives-du-duc');
+		channeltosend.send(toSend).then(message=>currentmessageage=message);
+	}else{
+		currentmessageage.edit(toSend);
+	}
+}
+
+function sortGamesPerAge(){
+	gamesSort = games.sort(function (jeua, jeub){
+		return (msDuRecord(jeua)-msDuRecord(jeub));
+	});
+	return gamesSort;
+}
+
+function sortGamesLightPerAge(){
+	gameslightSort = gameslight.sort(function (jeua, jeub){
+		return (msDuRecord(jeua)-msDuRecord(jeub));
+	});
+	return gameslightSort;
+}
+
+
 function graphqlrequestdarkqualif(){
 	d=new Date();
 	d.setMinutes(d.getMinutes() - 5);
@@ -99,8 +184,8 @@ function graphqlGS(){
 	graphqlclient.request(queryGS, variables).then(function(dataresult){dataGS=dataresult;
 		if(dataGS.ChampionshipGameResults[0]!=null){
 			if(toupdate(game,dataGS.ChampionshipGameResults[0])){
-				PBtosend.push(gamenametostring(game)+" - " +dataGS.ChampionshipGameResults[0].submittedTime.stringTime + "("+dataGS.ChampionshipGameResults[0].submittedTime.score+")- " + dataGS.ChampionshipGameResults[0].user.username);
-				console.log(gamenametostring(game)+" - " +dataGS.ChampionshipGameResults[0].submittedTime.stringTime + "("+dataGS.ChampionshipGameResults[0].submittedTime.score+")- " + dataGS.ChampionshipGameResults[0].user.username);
+				PBtosend.push(gamenametostring(game)+" - " +dataGS.ChampionshipGameResults[0].submittedTime.stringTime + " ("+dataGS.ChampionshipGameResults[0].submittedTime.score+") - " + dataGS.ChampionshipGameResults[0].user.username);
+				console.log(gamenametostring(game)+" - " +dataGS.ChampionshipGameResults[0].submittedTime.stringTime + " ("+dataGS.ChampionshipGameResults[0].submittedTime.score+") - " + dataGS.ChampionshipGameResults[0].user.username);
 				writegame(game,dataGS.ChampionshipGameResults[0]);
 				pbupdated=true;
 				if(pbupdated){
@@ -108,6 +193,7 @@ function graphqlGS(){
 					channeltosend=bot.channels.cache.find(channel => channel.name === 'guerre-de-succession');
 					channeltosend.send(pb,{code:true});
 				});
+				publishrecords();
 				pbupdated=false;
 				PBtosend=[];
 				}
@@ -126,8 +212,8 @@ function graphqlLightGod(){
 	graphqlclient.request(queryGS, variables).then(function(dataresult){dataGS=dataresult;
 		if(dataGS.ChampionshipGameResults[0]!=null){
 			if(toupdate(game,dataGS.ChampionshipGameResults[0])){
-				PBtosend.push(gamenametostring(game+10)+" - " +dataGS.ChampionshipGameResults[0].submittedTime.stringTime + "("+dataGS.ChampionshipGameResults[0].submittedTime.score+")- " + dataGS.ChampionshipGameResults[0].user.username);
-				console.log(gamenametostring(game+10)+" - " +dataGS.ChampionshipGameResults[0].submittedTime.stringTime + "("+dataGS.ChampionshipGameResults[0].submittedTime.score+")- " + dataGS.ChampionshipGameResults[0].user.username);
+				PBtosend.push(gamenametostring(game+10)+" - " +dataGS.ChampionshipGameResults[0].submittedTime.stringTime + " ("+dataGS.ChampionshipGameResults[0].submittedTime.score+") - " + dataGS.ChampionshipGameResults[0].user.username);
+				console.log(gamenametostring(game+10)+" - " +dataGS.ChampionshipGameResults[0].submittedTime.stringTime + " ("+dataGS.ChampionshipGameResults[0].submittedTime.score+") - " + dataGS.ChampionshipGameResults[0].user.username);
 				writegame(game,dataGS.ChampionshipGameResults[0]);
 				pbupdated=true;
 				if(pbupdated){
@@ -135,6 +221,7 @@ function graphqlLightGod(){
 					channeltosend=bot.channels.cache.find(channel => channel.name === 'light-arena');
 					channeltosend.send(pb,{code:true});
 				});
+				publishrecords();
 				pbupdated=false;
 				PBtosend=[];
 				}
@@ -145,6 +232,7 @@ function graphqlLightGod(){
 	}
 );}
 
+setInterval(updaterecords,3600000);
 setInterval(graphqlrequestdarkqualif, 300000);
 setInterval(graphqlGS, 300000);
 setInterval(graphqlLightGod,300000);
@@ -161,6 +249,15 @@ bot.on('message', msg => {
 	}
 	if (args[0]=="!enter"||args[0]=="!entrer"||args[0]=="!join"){
 		enter(msg);
+	}
+	if(args[0]=="!age"){
+		msg.reply(ageDuRecord(args[1]));
+	}
+	if(args[0]=="!pub"){
+				if(!msg.member.roles.cache.some(r=>[conf.adminRoleName].includes(r.name)) ){
+					return '';
+				}
+		publishrecords();
 	}
 	if(args[0]=="!entrants"){
 		entrants(msg);
@@ -180,6 +277,12 @@ bot.on('message', msg => {
 			nolive(msg);
 		}
 	}
+	if(args[0]=="!tournoi"){
+				if(!msg.member.roles.cache.some(r=>[conf.adminRoleName].includes(r.name)) ){
+					return '';
+				}
+		tournoi(msg);
+	}
 	//reasy
 	if (args[0]=="!ready"){
 		ready(msg);
@@ -192,6 +295,12 @@ bot.on('message', msg => {
 	}
 	if (args[0]=="!done"){
 		done(msg, args[1]);
+	}
+	if (args[0]=="!light"){
+		light(msg, args[1]);
+	}
+	if (args[0]=="!dark"){
+		dark(msg, args[1]);
 	}
 	if (args[0]=="!undone"){
 		undone(msg, args[1]);
@@ -543,6 +652,110 @@ function done(msg, time){
 	}
 }
 
+
+function dark(msg, time){
+	var currentMatch = match[msg.channel.id];
+	if (currentMatch!=null){
+		if(currentMatch.startTime!=0){
+			if(time!=""&&time!=undefined){
+				var IGT = parseTimeManuel(time,msg);
+				if(IGT==false||IGT==0){
+					return;
+				}
+			}
+			currentMatch.players.forEach(function(joueur){
+				if(joueur.id==msg.author.id){
+					joueur.status="DONE";
+					var finish=Date.now();
+					var RTAinMS=finish-currentMatch.startTime;
+					if(IGT!=""&&IGT!=null){
+						//recup le jeu
+						var jeu=recuplejeu(msg);
+						if(jeu!=""){
+							joueur.score=returnScoreDark(jeu,Math.floor(IGT/1000));
+							msg.channel.send(joueur.name+" is done [dark : "+joueur.score+"] in "+msToTime(IGT));
+						}
+						else {
+							return;
+						}
+						joueur.result=IGT;
+					}else {return;}
+				}
+			});
+			var toclose=true;
+			currentMatch.players.forEach(function(joueur){
+				toclose=joueur.status=="DONE"&&toclose;
+			});
+			if(toclose){
+			setTimeout(function(){
+			var toclose=true;
+			currentMatch.players.forEach(function(joueur){
+				toclose=joueur.status=="DONE"&&toclose;
+			});
+			if(toclose){
+				closeMatch(msg);
+			}
+			},120000);
+			}
+		}
+	}
+}
+
+function light(msg, time){
+	var currentMatch = match[msg.channel.id];
+	if (currentMatch!=null){
+		if(currentMatch.startTime!=0){
+			if(time!=""&&time!=undefined){
+				var IGT = parseTimeManuel(time,msg);
+				if(IGT==false||IGT==0){
+					return;
+				}
+			}
+			currentMatch.players.forEach(function(joueur){
+				if(joueur.id==msg.author.id){
+					joueur.status="DONE";
+					var finish=Date.now();
+					var RTAinMS=finish-currentMatch.startTime;
+					if(IGT!=""&&IGT!=null){
+						//recup le jeu
+						var jeu=recuplejeu(msg);
+						if(jeu!=""){
+							joueur.score=returnScoreLight(jeu,Math.floor(IGT/1000));
+							msg.channel.send(joueur.name+" is done [light : "+joueur.score+"] in "+msToTime(IGT));
+						}
+						else {
+							return;
+						}
+						joueur.result=IGT;
+					}else {return;}
+				}
+			});
+			var toclose=true;
+			currentMatch.players.forEach(function(joueur){
+				toclose=joueur.status=="DONE"&&toclose;
+			});
+			if(toclose){
+			setTimeout(function(){
+			var toclose=true;
+			currentMatch.players.forEach(function(joueur){
+				toclose=joueur.status=="DONE"&&toclose;
+			});
+			if(toclose){
+				closeMatch(msg);
+			}
+			},120000);
+			}
+		}
+	}
+}
+
+function recuplejeu(msg){
+	var jeu = msg.channel.name.substring(0,msg.channel.name.length-3);
+	if(gamerules["light"][jeu]!=undefined){
+		return jeu;
+	}
+	else return "";
+}
 function forceclose(msg){
 	var currentMatch = match[msg.channel.id];
 	if (currentMatch!=null){
@@ -705,13 +918,16 @@ function printResult(msg,match){
 	//POS - temps - joueur
 	toSort = match.players;
 	toSort.sort(function (joueura, joueurb){
-		return (joueura.result-joueurb.result);
+		if(joueura.score==0&&joueurb.score==0){
+		return (joueura.result-joueurb.result);}
+		else {return(joueura.score-joueurb.score);
+		}
 	});
 	var i=0;
 	toSort.forEach(function(joueur){
 		if(joueur.result!=0){
 		i++;
-		toReturn=toReturn+""+i+". "+msToTime(joueur.result)+" --- "+joueur.name+"\n";
+		toReturn=toReturn+""+i+". "+msToTime(joueur.result)+" ["+joueur.score+"] --- "+joueur.name+"\n";
 		}
 	});
 	if(i==0){
@@ -783,6 +999,54 @@ function toupdate(id,ChampionshipGameResults0){
 	 return true;
 	}
 	return false;
+}
+
+function returnScoreLight(jeu,temps){
+	return(calcScore(temps, gamerules["light"][jeu]["besttime"],gamerules["light"][jeu]["middletime"],0,150,205));
+}
+
+function returnScoreDark(jeu,temps){
+	return(calcScore(temps, gamerules["dark"][jeu]["besttime"],gamerules["dark"][jeu]["middletime"],151,205,205));
+}
+
+function calcScore(time, bestTime, middleTime, minScore, maxScore, capGame) {
+	//TEMPS EN S
+	//if light minscore = 0
+	//maxscore = 150
+	//if dark minscore = 151
+	//maxscore = 205
+    time = parseInt(time);
+    bestTime = parseInt(bestTime);
+    middleTime = parseInt(middleTime);
+    let timeCoeff = 2;
+
+    let totalDiffTime = bestTime - (bestTime + ((middleTime - bestTime) *2))
+
+    let score = Math.min(
+        capGame,
+        Math.max(
+            Math.floor(
+                100 * (timeCoeff - (((bestTime - time) / totalDiffTime) * timeCoeff))
+            ),
+            0
+        )
+    );
+
+    if (score < 100) {
+        let diffBetweenHundedAndTwoHundred = middleTime - bestTime;
+        let p_high = 100 / (Math.pow(2, Math.floor((time - middleTime)/diffBetweenHundedAndTwoHundred)));
+
+        score = Math.floor(p_high-(p_high/2)*(((time - middleTime)/diffBetweenHundedAndTwoHundred) - Math.floor((time - middleTime)/diffBetweenHundedAndTwoHundred)));
+    }
+
+    if ('' !== minScore && score < parseInt(minScore)) {
+        score = 0;
+    }
+    if (maxScore) {
+        score = Math.min(score, parseInt(maxScore));
+    }
+
+    return score;
 }
 
 function writegame(id,ChampionshipGameResults0){

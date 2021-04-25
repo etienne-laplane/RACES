@@ -1,0 +1,86 @@
+{
+	"light": {
+		"hollow-knight": {
+			"besttime": "900",
+			"middletime": "3300"
+		},
+		"steamworld-dig": {
+			"besttime": "720",
+			"middletime": "2280"
+		},
+		"mintroid": {
+			"besttime": "0",
+			"middletime": "480"
+		},
+		"ghouls-n-ghosts": {
+			"besttime": "0",
+			"middletime": "1080"
+		},
+		"unworthy": {
+			"besttime": "360",
+			"middletime": "2160"
+		},
+		"hamsterball": {
+			"besttime": "210",
+			"middletime": "720"
+		},
+		"trials-fusion": {
+			"besttime": "480",
+			"middletime": "2280"
+		},
+		"kururin-squash": {
+			"besttime": "240",
+			"middletime": "840"
+		},
+		"monkey-ball": {
+			"besttime": "450",
+			"middletime": "960"
+		},
+		"vectronom": {
+			"besttime": "480",
+			"middletime": "1080"
+		}
+	},
+	"dark": {
+		"hollow-knight": {
+			"besttime": "2310",
+			"middletime": "4944"
+		},
+		"steamworld-dig": {
+			"besttime": "1860",
+			"middletime": "3575"
+		},
+		"mintroid": {
+			"besttime": "450",
+			"middletime": "1124"
+		},
+		"ghouls-n-ghosts": {
+			"besttime": "480",
+			"middletime": "1705"
+		},
+		"unworthy": {
+			"besttime": "1680",
+			"middletime": "3762"
+		},
+		"hamsterball": {
+			"besttime": "570",
+			"middletime": "1122"
+		},
+		"trials-fusion": {
+			"besttime": "1860",
+			"middletime": "3697"
+		},
+		"kururin-squash": {
+			"besttime": "620",
+			"middletime": "1314"
+		},
+		"monkey-ball": {
+			"besttime": "1200",
+			"middletime": "2425"
+		},
+		"vectronom": {
+			"besttime": "1050",
+			"middletime": "2336"
+		}
+	}
+}

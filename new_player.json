@@ -3,5 +3,6 @@
     "name": "En attente du joueur...",
     "status": "AWAITING",
 	"ready":false,
-	"result":0  
+	"result":0,
+	"score":0
 }	
