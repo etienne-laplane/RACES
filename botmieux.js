@@ -91,6 +91,14 @@ function msDuRecord(id){
 	return mtime;
 }
 
+function tournoicreate(msg,id){
+//cree categorie "Tournoi + id"
+//cree channel infos
+	msg.guild.channels.create("Tournoi-"+id, {"type":"category","position":0}).then(function(result){
+	});
+
+}
+
 function publishrecords(){
 	//tri
 	sortGamesPerAge();
@@ -259,6 +267,12 @@ bot.on('message', msg => {
 				}
 		publishrecords();
 	}
+	if(args[0]=="!tournoi"){
+				if(!msg.member.roles.cache.some(r=>[conf.adminRoleName].includes(r.name)) ){
+					return '';
+				}
+		tournoicreate(msg,args[1]);
+	}
 	if(args[0]=="!entrants"){
 		entrants(msg);
 	}
@@ -276,12 +290,6 @@ bot.on('message', msg => {
 		if(!msg.member.roles.cache.some(r=>[conf.adminRoleName].includes(r.name)) ){
 			nolive(msg);
 		}
-	}
-	if(args[0]=="!tournoi"){
-				if(!msg.member.roles.cache.some(r=>[conf.adminRoleName].includes(r.name)) ){
-					return '';
-				}
-		tournoi(msg);
 	}
 	//reasy
 	if (args[0]=="!ready"){
