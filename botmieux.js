@@ -957,7 +957,7 @@ function printResult(msg,match){
 	toSort.sort(function (joueura, joueurb){
 		if(joueura.score==0&&joueurb.score==0){
 		return (joueura.result-joueurb.result);}
-		else {return(joueura.score-joueurb.score);
+		else {return(joueurb.score-joueura.score);
 		}
 	});
 	var i=0;
