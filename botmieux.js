@@ -108,11 +108,15 @@ function publishrecords(){
 	//format le message
 	toSend=toSend+"**LIGHT**\n"
 	gameslightSort.forEach(function(id){
-		toSend=toSend+ageDuRecord(id)+" - "+gamenametostring(id+10)+"\n";
+		let currentMatch = JSON.parse(fs.readFileSync('./'+id+'.json'));
+		//user.alias
+		//submittedTime.stringTime
+		toSend=toSend+ageDuRecord(id)+" - "+gamenametostring(id+10)+" --- "+currentMatch.submittedTime.stringTime +" - "+currentMatch.user.alias+ "\n";
 	});
 	toSend=toSend+"**DARK**\n";
 		gamesSort.forEach(function(id){
-		toSend=toSend+ageDuRecord(id)+" - "+gamenametostring(id)+"\n";
+			let currentMatch = JSON.parse(fs.readFileSync('./'+id+'.json'));
+		toSend=toSend+ageDuRecord(id)+" - "+gamenametostring(id)+" --- "+currentMatch.submittedTime.stringTime +" - "+currentMatch.user.alias+ "\n";
 	});
 	channeltosend=bot.channels.cache.find(channel => channel.name === 'archives-du-duc');
 	channeltosend.send(toSend).then(message=>currentmessageage=message);
@@ -128,11 +132,15 @@ function updaterecords(){
 	//format le message
 	toSend=toSend+"**LIGHT**\n"
 	gameslightSort.forEach(function(id){
-		toSend=toSend+ageDuRecord(id)+" - "+gamenametostring(id+10)+"\n";
+		let currentMatch = JSON.parse(fs.readFileSync('./'+id+'.json'));
+		//user.alias
+		//submittedTime.stringTime
+		toSend=toSend+ageDuRecord(id)+" - "+gamenametostring(id+10)+" --- "+currentMatch.submittedTime.stringTime +" - "+currentMatch.user.alias+ "\n";
 	});
 	toSend=toSend+"**DARK**\n";
 		gamesSort.forEach(function(id){
-		toSend=toSend+ageDuRecord(id)+" - "+gamenametostring(id)+"\n";
+			let currentMatch = JSON.parse(fs.readFileSync('./'+id+'.json'));
+		toSend=toSend+ageDuRecord(id)+" - "+gamenametostring(id)+" --- "+currentMatch.submittedTime.stringTime +" - "+currentMatch.user.alias+ "\n";
 	});
 	if(currentmessageage==undefined){
 		channeltosend=bot.channels.cache.find(channel => channel.name === 'archives-du-duc');
@@ -240,7 +248,7 @@ function graphqlLightGod(){
 	}
 );}
 
-setInterval(updaterecords,3600000);
+setInterval(updaterecords,3600);
 setInterval(graphqlrequestdarkqualif, 300000);
 setInterval(graphqlGS, 300000);
 setInterval(graphqlLightGod,300000);
