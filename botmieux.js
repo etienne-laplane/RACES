@@ -99,6 +99,28 @@ function tournoicreate(msg,id){
 
 }
 
+function publishoredit(){
+	var tempsmax=3600000;
+	games.forEach(function(id){
+		console.log(msDuRecord(id));
+		if((Date.now()-msDuRecord(id))<tempsmax){
+			tempsmax=(Date.now()-msDuRecord(id));
+		}
+	});
+	gameslight.forEach(function(id){
+	 if((Date.now()-msDuRecord(id))<tempsmax){
+			tempsmax=(Date.now()-msDuRecord(id));
+		}
+	});
+	console.log(tempsmax);
+	if(tempsmax<3600000){
+		publishrecords();
+	}
+	else{
+		updaterecords();
+	}
+}
+
 function publishrecords(){
 	//tri
 	sortGamesPerAge();
@@ -209,7 +231,6 @@ function graphqlGS(){
 					channeltosend=bot.channels.cache.find(channel => channel.name === 'guerre-de-succession');
 					channeltosend.send(pb,{code:true});
 				});
-				publishrecords();
 				pbupdated=false;
 				PBtosend=[];
 				}
@@ -248,7 +269,7 @@ function graphqlLightGod(){
 	}
 );}
 
-setInterval(updaterecords,3600);
+setInterval(publishoredit,3600001);
 setInterval(graphqlrequestdarkqualif, 300000);
 setInterval(graphqlGS, 300000);
 setInterval(graphqlLightGod,300000);
