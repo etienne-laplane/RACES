@@ -24,15 +24,15 @@
 			"besttime": "210",
 			"middletime": "720"
 		},
-		"trials-fusion": {
+		"kururin-squash": {
 			"besttime": "480",
 			"middletime": "2280"
 		},
-		"kururin-squash": {
+		"monkey-ball": {
 			"besttime": "240",
 			"middletime": "840"
 		},
-		"monkey-ball": {
+		"trials-fusion": {
 			"besttime": "450",
 			"middletime": "960"
 		},
@@ -66,15 +66,15 @@
 			"besttime": "570",
 			"middletime": "1122"
 		},
-		"trials-fusion": {
+		"kururin-squash": {
 			"besttime": "1860",
 			"middletime": "3697"
 		},
-		"kururin-squash": {
+		"monkey-ball": {
 			"besttime": "620",
 			"middletime": "1314"
 		},
-		"monkey-ball": {
+		"trials-fusion": {
 			"besttime": "1200",
 			"middletime": "2425"
 		},
