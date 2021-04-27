@@ -134,7 +134,6 @@ function publishrecords(){
 	toSend=toSend+"```";
 	channeltosend=bot.channels.cache.find(channel => channel.name === 'archives-du-duc');
 	channeltosend.send(toSend).then(message=>currentmessageage=message);
-
 }
 
 function updaterecords(){
@@ -156,6 +155,7 @@ function updaterecords(){
 			let currentMatch = JSON.parse(fs.readFileSync('./'+id+'.json'));
 		toSend=toSend+ageDuRecord(id)+" - "+gamenametostring(id)+" --- "+currentMatch.submittedTime.stringTime +" ("+currentMatch.user.alias+ ")\n";
 	});
+	toSend=toSend+"```";
 	if(currentmessageage==undefined){
 		channeltosend=bot.channels.cache.find(channel => channel.name === 'archives-du-duc');
 		channeltosend.send(toSend).then(message=>currentmessageage=message);
@@ -377,9 +377,6 @@ bot.on('message', msg => {
 	}
 	//AIDZ
 	if (args[0]=="!help"){
-				if(msg.channel.name!="races"){
-			return;
-		}
 		//TODO : verif qu'on est dans un chan autorisé
 		help(msg);
 	}
@@ -975,7 +972,8 @@ function help(msg){
 			  "!ready         : you're ready to start ! - vous êtes prêt à partir\n"+
 			  "!entrants      : player list - liste des joueurs\n"+
 			  "!go            : starts the race (if everybody's ready)\n"+
-			  "!done <time>   : you're done - Vous avez fini\n"+
+			  "!dark <time>   : you're done - Vous avez fini une run light\n"+
+			  "!light <time>   : you're done - Vous avez fini une run dark\n"+
 			  "!undone        : if you've done/forfeit by accident\n"+
 			  "!forfeit       : you quit the race - vous abandonnez la race\n"+
 			  "!result        : display the current results - affiche les résultats du match\n"+
