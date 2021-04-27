@@ -141,20 +141,20 @@ function updaterecords(){
 	//tri
 	sortGamesPerAge();
 	sortGamesLightPerAge();
-	var toSend="";
+	var toSend="How old are the UD records ?";
 	//calc les ages
 	//format le message
-	toSend=toSend+"**LIGHT**\n"
+	toSend=toSend+"\n**LIGHT**```\n"
 	gameslightSort.forEach(function(id){
 		let currentMatch = JSON.parse(fs.readFileSync('./'+id+'.json'));
 		//user.alias
 		//submittedTime.stringTime
-		toSend=toSend+ageDuRecord(id)+" - "+gamenametostring(id+10)+" --- "+currentMatch.submittedTime.stringTime +" - "+currentMatch.user.alias+ "\n";
+		toSend=toSend+ageDuRecord(id)+" - "+gamenametostring(id+10)+" --- "+currentMatch.submittedTime.stringTime +" ("+currentMatch.user.alias+ ")\n";
 	});
-	toSend=toSend+"**DARK**\n";
+	toSend=toSend+"```**DARK**\n```";
 		gamesSort.forEach(function(id){
 			let currentMatch = JSON.parse(fs.readFileSync('./'+id+'.json'));
-		toSend=toSend+ageDuRecord(id)+" - "+gamenametostring(id)+" --- "+currentMatch.submittedTime.stringTime +" - "+currentMatch.user.alias+ "\n";
+		toSend=toSend+ageDuRecord(id)+" - "+gamenametostring(id)+" --- "+currentMatch.submittedTime.stringTime +" ("+currentMatch.user.alias+ ")\n";
 	});
 	if(currentmessageage==undefined){
 		channeltosend=bot.channels.cache.find(channel => channel.name === 'archives-du-duc');
