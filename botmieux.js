@@ -72,16 +72,7 @@ function ageDuRecord(id){
 	const start = Date.now();
 	var stats = fs.statSync("./"+id+".json");
 	var mtime = stats.mtime.getTime();;
-	if(Math.floor((start-mtime)/3600000)<10){
-	return "00"+Math.floor((start-mtime)/3600000)+"h";
-	}
-	if(Math.floor((start-mtime)/3600000)<100){
-	return "0"+Math.floor((start-mtime)/3600000)+"h";
-	}
-	if(Math.floor((start-mtime)/3600000)<1000){
-	return Math.floor((start-mtime)/3600000)+"h";
-	}
-	return Math.floor((start-mtime)/3600000)+"h";
+	return Math.floor((start-mtime)/(3600000*24))+"d " + Math.floor(((start-mtime)-3600000*24*Math.floor((start-mtime)/(3600000*24)))/(3600000))+"h";
 }
 
 function msDuRecord(id){
@@ -125,21 +116,22 @@ function publishrecords(){
 	//tri
 	sortGamesPerAge();
 	sortGamesLightPerAge();
-	var toSend="";
+	var toSend="How old are the UD records ?";
 	//calc les ages
 	//format le message
-	toSend=toSend+"**LIGHT**\n"
+	toSend=toSend+"\n**LIGHT**```\n"
 	gameslightSort.forEach(function(id){
 		let currentMatch = JSON.parse(fs.readFileSync('./'+id+'.json'));
 		//user.alias
 		//submittedTime.stringTime
-		toSend=toSend+ageDuRecord(id)+" - "+gamenametostring(id+10)+" --- "+currentMatch.submittedTime.stringTime +" - "+currentMatch.user.alias+ "\n";
+		toSend=toSend+ageDuRecord(id)+" - "+gamenametostring(id+10)+" --- "+currentMatch.submittedTime.stringTime +" ("+currentMatch.user.alias+ ")\n";
 	});
-	toSend=toSend+"**DARK**\n";
+	toSend=toSend+"```**DARK**\n```";
 		gamesSort.forEach(function(id){
 			let currentMatch = JSON.parse(fs.readFileSync('./'+id+'.json'));
-		toSend=toSend+ageDuRecord(id)+" - "+gamenametostring(id)+" --- "+currentMatch.submittedTime.stringTime +" - "+currentMatch.user.alias+ "\n";
+		toSend=toSend+ageDuRecord(id)+" - "+gamenametostring(id)+" --- "+currentMatch.submittedTime.stringTime +" ("+currentMatch.user.alias+ ")\n";
 	});
+	toSend=toSend+"```";
 	channeltosend=bot.channels.cache.find(channel => channel.name === 'archives-du-duc');
 	channeltosend.send(toSend).then(message=>currentmessageage=message);
 
@@ -331,6 +323,7 @@ bot.on('message', msg => {
 		go(msg);
 	}
 	if (args[0]=="!done"){
+		msg.reply("use !light <time> or !dark <time> instead of !done in a UD9 game race to get ranked by score !");
 		done(msg, args[1]);
 	}
 	if (args[0]=="!light"){
