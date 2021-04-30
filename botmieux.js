@@ -2,6 +2,7 @@ const { GraphQLClient, gql  } = require('graphql-request')
 const Discord = require('discord.js');
 var auth = require('./auth.json');
 var conf = require('./conf.json');
+const axios = require('axios');
 var gamelist = require('./games.json');
 var gamerules = require('./gamerules.json');
 const bot = new Discord.Client();
@@ -67,7 +68,6 @@ function isUDlive(){
 	);
 }
 
-
 function ageDuRecord(id){
 	const start = Date.now();
 	var stats = fs.statSync("./"+id+".json");
@@ -80,14 +80,6 @@ function msDuRecord(id){
 	var stats = fs.statSync("./"+id+".json");
 	var mtime = stats.mtime.getTime();;
 	return mtime;
-}
-
-function tournoicreate(msg,id){
-//cree categorie "Tournoi + id"
-//cree channel infos
-	msg.guild.channels.create("Tournoi-"+id, {"type":"category","position":0}).then(function(result){
-	});
-
 }
 
 function publishoredit(){
@@ -177,7 +169,6 @@ function sortGamesLightPerAge(){
 	});
 	return gameslightSort;
 }
-
 
 function graphqlrequestdarkqualif(){
 	d=new Date();
@@ -274,11 +265,24 @@ bot.on('message', msg => {
 		if(msg.channel.name!="races"){
 			return
 		}
-		start(msg, msg.content.substring(args[0].length+1));
+		start(msg, args[1],args[2]);
 	}
 	if (args[0]=="!enter"||args[0]=="!entrer"||args[0]=="!join"){
 		enter(msg);
 	}
+	if (args[0]=="!leave"){
+		leave(msg);
+	}
+	//API TOURNOI
+	if(args[0]=="!register"){
+		//TODO : test nom channel "inscription"
+		register(msg);
+	}
+		if(args[0]=="!unregister"){
+		//TODO : test nom channel "inscription"
+		unregister(msg);
+	}
+	
 	if(args[0]=="!age"){
 		msg.reply(ageDuRecord(args[1]));
 	}
@@ -405,7 +409,82 @@ bot.on('message', msg => {
 	}
 });
 
-	
+function tournoicreate(msg,id){
+//cree categorie "Tournoi + id"
+//cree channel infos
+	msg.guild.channels.create("Tournoi-"+id, {"type":"category","position":0}).then(function(result){
+		msg.guild.channels.create("Inscription", 'text').then(function(inscription){
+			inscription.send("Pour s'inscire au tournoi, !register\nLe classement : https://www.ultimedecathlon.com/tournois/"+id);
+			inscription.setParent(result.id);
+		});
+		msg.guild.channels.create("Races", 'text').then(function(races){
+			races.send("Pour lancer des races et se préparer.");
+			races.setParent(result.id);
+		});
+	});
+}
+
+function register(msg){
+	if(msg.channel.parent==null||!msg.channel.parent.name.includes("Tournoi-")){
+		return;
+	}
+	var tournoi_id=msg.channel.parent.name.substring(8);
+	axios.get("https://www.ultimedecathlon.com/_/tournament-"+tournoi_id+"/register/discord-"+encodeURIComponent(msg.author.tag),{ auth: {
+    username: 'udadm',
+    password: 'Just1Shittypassword'
+	}}).then(function(response){
+		if(response.data.error){
+			msg.reply(response.data.message);
+		}
+		else{
+			msg.reply(response.data.message);
+		}
+	}).catch(function (error) {
+  });
+}
+
+function donetourney(msg,raceid,TEMPSENMS){
+	if(msg.channel.parent==null||!msg.channel.parent.name.includes("Tournoi-")){
+		return;
+	}
+	var tournoi_id=msg.channel.parent.name.substring(8);
+	var jeu=recuplejeu(msg);
+	if(jeu!=""){
+		
+	axios.get("https://www.ultimedecathlon.com/_/tournament-"+tournoi_id+"/race-"+raceid+"/discord-"+encodeURIComponent(msg.author.tag)+"/time-0"+msToTime(TEMPSENMS),{ auth: {
+    username: 'udadm',
+    password: 'Just1Shittypassword'
+	}}).then(function(response){
+		if(response.data.error){
+			msg.reply(response.data.message);
+		}
+		else{
+			msg.reply(response.data.message);
+		}
+	}).catch(function (error) {
+  });
+	}
+}
+
+function unregister(msg){
+	if(msg.channel.parent==null||!msg.channel.parent.name.includes("Tournoi-")){
+		return;
+	}
+	var tournoi_id=msg.channel.parent.name.substring(8);
+	axios.get("https://www.ultimedecathlon.com/_/tournament-"+tournoi_id+"/unregister/discord-"+encodeURIComponent(msg.author.tag),{ auth: {
+    username: 'udadm',
+    password: 'Just1Shittypassword'
+	}}).then(function(response){
+		if(response.data.error){
+			msg.reply(response.data.message);
+		}
+		else{
+			msg.reply(response.data.message);
+		}
+	}).catch(function (error) {
+  });
+}
+
 function newmatch(){
 	var new_match=JSON.parse(fs.readFileSync('./new_match.json'));
 	return new_match;
@@ -431,16 +510,41 @@ function nolive(msg){
 	LIVE=false;
 }
 
-function start(msg,name){	
-	if (name=="random"){
+function start(msg,name,id_match){
+	var category;
+	if(msg.channel.parent!=null&&msg.channel.parent.name.includes("Tournoi-")){
+		//check role, parce qu'on est dans un tournoi
+		if(!msg.member.roles.cache.some(r=>[conf.adminRoleName].includes(r.name))){
+			return;
+		}
+		if(id_match==""||id_match==null||id_match==undefined){
+			msg.reply("ID du match ?")
+			return;
+		}
+		const parsed = parseInt(id_match);
+		if (isNaN(parsed)) {  
+			msg.reply("ID du match ?");
+			return;
+		}
+		//check race.
+		var tournoi_id=msg.channel.parent.name.substring(8);
+		axios.get("https://www.ultimedecathlon.com/_/tournament-"+tournoi_id+"/race-"+id_match+"/infos",{ auth: {
+			username: 'udadm',
+			password: 'Just1Shittypassword'
+			}}).then(function(response){
+				if(response.data.error){
+					msg.reply(response.data.message);
+				}
+				else{
+					msg.reply(response.data.message);
+					category = msg.channel.parent;
+						if (name=="random"){
 		name=Math.ceil(Math.random()*10)+"";
 	}
 	var jeu = getGameName(name);
 	var nom = channelGenerateName(jeu);
 	msg.guild.channels.create((nom), 'text').then(function(result){
 		channel_id = result.id;
-		let category = msg.guild.channels.cache.find(c => c.name == "LIVE-RACES");
-		if (!category) throw new Error("Category channel does not exist");
 		result.setParent(category.id);
 		msg.reply("Match démarré dans le salon "+result.toString());
 		match[channel_id]=newmatch();
@@ -448,7 +552,35 @@ function start(msg,name){
 		currentMatch=match[channel_id];
 		currentMatch.players.push(newplayer(msg.author.id,msg.author.tag,false));
 		currentMatch.jeu=jeu;
+		currentMatch.id=id_match;
 	});
+					
+				}
+			}).catch(function (error) {
+				return;
+			});	
+	}
+	else{
+		category = msg.guild.channels.cache.find(c => c.name == "LIVE-RACES");
+		if (!category) throw new Error("Category channel does not exist");
+	
+	if (name=="random"){
+		name=Math.ceil(Math.random()*10)+"";
+	}
+	var jeu = getGameName(name);
+	var nom = channelGenerateName(jeu);
+	msg.guild.channels.create((nom), 'text').then(function(result){
+		channel_id = result.id;
+		result.setParent(category.id);
+		msg.reply("Match démarré dans le salon "+result.toString());
+		match[channel_id]=newmatch();
+		msg.guild.channels.cache.find(channel => channel.id === channel_id).send("Race créée par : " + msg.member.toString());
+		currentMatch=match[channel_id];
+		currentMatch.players.push(newplayer(msg.author.id,msg.author.tag,false));
+		currentMatch.jeu=jeu;
+		currentMatch.id=id_match;
+	});
+	}
 }
 
 function notify(msg){
@@ -493,6 +625,29 @@ function enter(msg){
 		if(idiot)return;
 		currentMatch.players.push(newplayer(msg.author.id,msg.author.tag,false));
 		msg.channel.send(msg.member.toString()+" "+"enters the race !");
+	}
+}
+
+function forceenter(msg){
+	var currentMatch = match[msg.channel.id];
+		var idiot=false;
+		currentMatch.players.forEach(function(joueur){
+			if(joueur.id==msg.author.id){
+				idiot=true;
+			}
+		}); 
+		if(idiot)return;
+		currentMatch.players.push(newplayer(msg.author.id,msg.author.tag,false));
+}
+
+function leave(msg){
+	var currentMatch = match[msg.channel.id];
+	if (currentMatch!=null&&currentMatch.startTime==0){
+		if(currentMatch.players.findIndex(element=>element.id==msg.author.id)>-1){
+			currentMatch.players.splice(i,1);
+			msg.reply("left.");
+			return;
+		}
 	}
 }
 
@@ -582,6 +737,7 @@ function restart(msg){
 }
 
 function go(msg){
+	ready(msg);
 	var currentMatch = match[msg.channel.id];
 	if (currentMatch!=null){
 		if(currentMatch.status!=""){
@@ -645,11 +801,17 @@ function done(msg, time){
 					return;
 				}
 			}
+			var found=false;
 			currentMatch.players.forEach(function(joueur){
 				if(joueur.id==msg.author.id){
+					found=true;
 					joueur.status="DONE";
 					var finish=Date.now();
 					var RTAinMS=finish-currentMatch.startTime;
+					var jeu=recuplejeu(msg);
+					if(jeu!=""){
+						return;
+					}		
 					if(IGT==""||IGT==null){
 						msg.channel.send(joueur.name+" is done in "+msToTime(RTAinMS));
 						joueur.result=RTAinMS;
@@ -660,6 +822,14 @@ function done(msg, time){
 					}
 				}
 			});
+			if(!found){
+				//verif on est dans un tournoi
+				if(msg.channel.parent!=null&&msg.channel.parent.name.includes("Tournoi-")){
+					//on ajoute le joueur et on rappelle done;
+					forceenter(msg);
+					done(msg,time);
+				}
+			}
 			var toclose=true;
 			currentMatch.players.forEach(function(joueur){
 				toclose=joueur.status=="DONE"&&toclose;
@@ -679,7 +849,6 @@ function done(msg, time){
 	}
 }
 
-
 function dark(msg, time){
 	var currentMatch = match[msg.channel.id];
 	if (currentMatch!=null){
@@ -690,8 +859,10 @@ function dark(msg, time){
 					return;
 				}
 			}
+			var found=false;
 			currentMatch.players.forEach(function(joueur){
 				if(joueur.id==msg.author.id){
+					found=true;
 					joueur.status="DONE";
 					var finish=Date.now();
 					var RTAinMS=finish-currentMatch.startTime;
@@ -706,9 +877,18 @@ function dark(msg, time){
 							return;
 						}
 						joueur.result=IGT;
+						donetourney(msg,currentMatch.id+1,IGT);
 					}else {return;}
 				}
 			});
+			if(!found){
+				//verif on est dans un tournoi
+				if(msg.channel.parent!=null&&msg.channel.parent.name.includes("Tournoi-")){
+					//on ajoute le joueur et on rappelle done;
+					forceenter(msg);
+					done(msg,time);
+				}
+			}
 			var toclose=true;
 			currentMatch.players.forEach(function(joueur){
 				toclose=joueur.status=="DONE"&&toclose;
@@ -738,8 +918,10 @@ function light(msg, time){
 					return;
 				}
 			}
+			var found=false;
 			currentMatch.players.forEach(function(joueur){
 				if(joueur.id==msg.author.id){
+					found=true;
 					joueur.status="DONE";
 					var finish=Date.now();
 					var RTAinMS=finish-currentMatch.startTime;
@@ -754,9 +936,18 @@ function light(msg, time){
 							return;
 						}
 						joueur.result=IGT;
+						donetourney(msg,currentMatch.id,IGT);
 					}else {return;}
 				}
 			});
+			if(!found){
+				//verif on est dans un tournoi
+				if(msg.channel.parent!=null&&msg.channel.parent.name.includes("Tournoi-")){
+					//on ajoute le joueur et on rappelle done;
+					forceenter(msg);
+					done(msg,time);
+				}
+			}
 			var toclose=true;
 			currentMatch.players.forEach(function(joueur){
 				toclose=joueur.status=="DONE"&&toclose;
@@ -783,6 +974,7 @@ function recuplejeu(msg){
 	}
 	else return "";
 }
+
 function forceclose(msg){
 	var currentMatch = match[msg.channel.id];
 	if (currentMatch!=null){
@@ -814,7 +1006,7 @@ function parseTimeManuel(time,msg){
 			}
 			timeasms=parseInt(timeasms);
 	if(timeasms!=undefined&&timeasms!=0){
-		msg.reply("IGT : "+msToTime(timeasms));
+		//msg.reply("IGT : "+msToTime(timeasms));
 		return timeasms;
 	}else{
 		msg.reply("please submit time as h:mm:ss or mm:ss");
@@ -898,7 +1090,6 @@ function gameslist(msg){
 	{code:true});
 }
 
-
 function msToTime(s) {
   var ms = s % 1000;
   s = (s - ms) / 1000;
@@ -933,7 +1124,6 @@ function result(msg){
 		}
 	}
 }
-
 
 function printResult(msg,match){
 	if(match.jeu!=undefined){
@@ -1020,7 +1210,7 @@ function gamenametostring(id){
 		break;
 	}
 }
-//cas 1; null
+
 function toupdate(id,ChampionshipGameResults0){
 	let currentMatch = JSON.parse(fs.readFileSync('./'+id+'.json'));
 	if(ChampionshipGameResults0.submittedTime.stringTime!=currentMatch.submittedTime.stringTime){
