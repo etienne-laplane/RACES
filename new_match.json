@@ -2,5 +2,6 @@
   "players": [],
   "startTime": 0,
   "jeu":"",
-  "status":""
+  "status":"",
+  "id":0
 }
