@@ -1135,7 +1135,7 @@ function printResult(msg,match){
 	//POS - temps - joueur
 	toSort = match.players;
 	toSort.sort(function (joueura, joueurb){
-		if(joueura.score==0&&joueurb.score==0){
+		if(joueura.score==joueurb.score){
 		return (joueura.result-joueurb.result);}
 		else {return(joueurb.score-joueura.score);
 		}
