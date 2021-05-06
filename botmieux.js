@@ -662,6 +662,7 @@ function forceenter(msg){
 }
 
 function leave(msg){
+	return;
 	var currentMatch = match[msg.channel.id];
 	if (currentMatch!=null&&currentMatch.startTime==0){
 		if(currentMatch.players.findIndex(element=>element.id==msg.author.id)>-1){
