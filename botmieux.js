@@ -33,7 +33,7 @@ const authProvider = new twitchauth.ClientCredentialsAuthProvider(clientId, clie
 const apiClient = new ApiClient({ authProvider });
 var tournoi={};
 var currentmessageage;
-var dev=true;
+var dev=false;
 
 const graphqlclient=new GraphQLClient("https://www.ultimedecathlon.com/graphql")
 const query = gql`query qualified ($episode: Int!, $after: DateTime) {
