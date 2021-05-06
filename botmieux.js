@@ -5,6 +5,12 @@ var conf = require('./conf.json');
 const axios = require('axios');
 var gamelist = require('./games.json');
 var gamerules = require('./gamerules.json');
+const express = require('express');
+const app = express();
+const http = require('http');
+const server = http.createServer(app);
+const { Server } = require("socket.io");
+const io = new Server(server);
 const bot = new Discord.Client();
 var fs = require('fs');
 var match={};
@@ -27,6 +33,7 @@ const authProvider = new twitchauth.ClientCredentialsAuthProvider(clientId, clie
 const apiClient = new ApiClient({ authProvider });
 var tournoi={};
 var currentmessageage;
+var dev=true;
 
 const graphqlclient=new GraphQLClient("https://www.ultimedecathlon.com/graphql")
 const query = gql`query qualified ($episode: Int!, $after: DateTime) {
@@ -51,6 +58,8 @@ const queryGS = gql`query firstGame ($gameId: Int!) {
     }
   }
 }`
+
+
 
 function isUDlive(){
 	isStreamLive("ultimedecathlon").then(function(result){
@@ -429,6 +438,8 @@ function register(msg){
 		return;
 	}
 	var tournoi_id=msg.channel.parent.name.substring(8);
+	if(dev){
+	}else{
 	axios.get("https://www.ultimedecathlon.com/_/tournament-"+tournoi_id+"/register/discord-"+encodeURIComponent(msg.author.tag),{ auth: {
     username: 'udadm',
     password: 'Just1Shittypassword'
@@ -440,7 +451,7 @@ function register(msg){
 			msg.reply(response.data.message);
 		}
 	}).catch(function (error) {
-  });
+	});}
 }
 
 function donetourney(msg,raceid,TEMPSENMS){
@@ -450,7 +461,8 @@ function donetourney(msg,raceid,TEMPSENMS){
 	var tournoi_id=msg.channel.parent.name.substring(8);
 	var jeu=recuplejeu(msg);
 	if(jeu!=""){
-		
+	if(dev){
+	}else{
 	axios.get("https://www.ultimedecathlon.com/_/tournament-"+tournoi_id+"/race-"+raceid+"/discord-"+encodeURIComponent(msg.author.tag)+"/time-0"+msToTime(TEMPSENMS),{ auth: {
     username: 'udadm',
     password: 'Just1Shittypassword'
@@ -462,7 +474,8 @@ function donetourney(msg,raceid,TEMPSENMS){
 			msg.reply(response.data.message);
 		}
 	}).catch(function (error) {
-  });
+	});
+	}
 	}
 }
 
@@ -471,6 +484,8 @@ function unregister(msg){
 		return;
 	}
 	var tournoi_id=msg.channel.parent.name.substring(8);
+	if(dev){
+	}else{
 	axios.get("https://www.ultimedecathlon.com/_/tournament-"+tournoi_id+"/unregister/discord-"+encodeURIComponent(msg.author.tag),{ auth: {
     username: 'udadm',
     password: 'Just1Shittypassword'
@@ -482,7 +497,8 @@ function unregister(msg){
 			msg.reply(response.data.message);
 		}
 	}).catch(function (error) {
-  });
+	});
+	}
 }
 
 function newmatch(){
@@ -511,6 +527,9 @@ function nolive(msg){
 }
 
 function start(msg,name,id_match){
+	if(name==undefined){
+		name="Race";
+	}
 	var category;
 	if(msg.channel.parent!=null&&msg.channel.parent.name.includes("Tournoi-")){
 		//check role, parce qu'on est dans un tournoi
@@ -528,6 +547,8 @@ function start(msg,name,id_match){
 		}
 		//check race.
 		var tournoi_id=msg.channel.parent.name.substring(8);
+		if(dev){
+		}else{
 		axios.get("https://www.ultimedecathlon.com/_/tournament-"+tournoi_id+"/race-"+id_match+"/infos",{ auth: {
 			username: 'udadm',
 			password: 'Just1Shittypassword'
@@ -560,7 +581,7 @@ function start(msg,name,id_match){
 				return;
 			});	
 	}
-	else{
+	}else{
 		category = msg.guild.channels.cache.find(c => c.name == "LIVE-RACES");
 		if (!category) throw new Error("Category channel does not exist");
 	
@@ -768,6 +789,7 @@ function startMatch(msg){
 	if (currentMatch!=null){
 		currentMatch.status="GO";
 		//3 2 1 stock start time as ms.
+		msg.channel.setName(msg.channel.name.replace("\u2705","\uD83D\uDD36"));
 		msg.channel.send("Race is starting in 10 seconds !");
         var i = 10;
         var interval = setInterval(function(){
@@ -784,6 +806,7 @@ function startMatch(msg){
 			msg.channel.send("GO!");
 			var startdatetime = Date.now();
             currentMatch.startTime=startdatetime;
+			msg.channel.setName(msg.channel.name.replace("\uD83D\uDD36","\uD83D\uDD34"));
 			clearInterval(this);
 		}
 		i--;
@@ -870,6 +893,11 @@ function dark(msg, time){
 						//recup le jeu
 						var jeu=recuplejeu(msg);
 						if(jeu!=""){
+							if(gamerules["dark"][jeu]["middletime"]<Math.floor(IGT/1000)){
+								msg.reply("Temps au dela de la durée de l'épreuve.");
+								silentforfeit(msg);
+								return;
+							}
 							joueur.score=returnScoreDark(jeu,Math.floor(IGT/1000));
 							msg.channel.send(joueur.name+" is done [dark : "+joueur.score+"] in "+msToTime(IGT));
 						}
@@ -929,6 +957,11 @@ function light(msg, time){
 						//recup le jeu
 						var jeu=recuplejeu(msg);
 						if(jeu!=""){
+							if(gamerules["light"][jeu]["middletime"]<Math.floor(IGT/1000)){
+								msg.reply("Temps au dela de la durée de l'épreuve.");
+								silentforfeit(msg);
+								return;
+							}
 							joueur.score=returnScoreLight(jeu,Math.floor(IGT/1000));
 							msg.channel.send(joueur.name+" is done [light : "+joueur.score+"] in "+msToTime(IGT));
 						}
@@ -1049,12 +1082,44 @@ function forfeit(msg){
 	}
 }
 
+function silentforfeit(msg){
+	var currentMatch = match[msg.channel.id];
+	if (currentMatch!=null){
+		if(currentMatch.startTime!=0){
+			currentMatch.players.forEach(function(joueur){
+				if(joueur.id==msg.author.id){
+					joueur.status="DONE";
+					joueur.result=0;
+					}
+				}
+			);
+			var toclose=true;
+			currentMatch.players.forEach(function(joueur){
+				toclose=joueur.status=="DONE"&&toclose;
+			});
+			if(toclose){
+			setTimeout(function(){
+			var toclose=true;
+			currentMatch.players.forEach(function(joueur){
+				toclose=joueur.status=="DONE"&&toclose;
+			});
+			if(toclose){
+				closeMatch(msg);
+			}
+			},120000);
+			}
+		}
+	}
+}
+
 function closeMatch(msg){
 	var currentMatch = match[msg.channel.id];
 	if (currentMatch!=null){
 		//résumé dans race_result
 		var race_results=printResult(msg,currentMatch);
 		if(race_results!=""){
+			//TODO: SendPB's
+			
 			channeltosend=msg.guild.channels.cache.find(channel => channel.name === 'race_results');
 			channeltosend.send(""+race_results);
 		}
@@ -1110,9 +1175,9 @@ function channelGenerateName(jeu){
 	yourNumber=Math.random()*1000000000;
 	hexString = yourNumber.toString(16);
 	if(jeu!=undefined){
-		return jeu+"-"+hexString.substring(0,2);
+		return jeu+"-"+"\u2705";
 	}
-	return "race-"+hexString.substring(0,4);
+	return "race-"+hexString.substring(0,2)+"\u2705";
 }
 
 function result(msg){
@@ -1278,3 +1343,14 @@ bot.on("warn", (e) => console.warn(e));
 bot.on("debug", (e) => console.info(e));
   
 bot.login(auth.token);
+
+if(dev){
+}else{
+io.on('connection', (socket) => {
+  console.log('a user connected');
+});
+
+server.listen(3000, () => {
+  console.log('listening on *:3000');
+});
+}
