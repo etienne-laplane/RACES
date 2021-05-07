@@ -533,7 +533,7 @@ function checkPB(msg,tempsenms,lightordark){
 	if(dev){
 	}else{
 		//console.log("coucou");
-	axios.get("https://dev.ultimedecathlon.com/_/check-pb/discord-"+encodeURIComponent(msg.author.tag)+"/game-"+idjeu+"/time-"+msToTime(tempsenms),{ auth: {
+	axios.get("https://www.ultimedecathlon.com/_/check-pb/discord-"+encodeURIComponent(msg.author.tag)+"/game-"+idjeu+"/time-"+msToTime(tempsenms),{ auth: {
     username: 'udadm',
     password: 'Just1Shittypassword'
 	}}).then(function(response){
