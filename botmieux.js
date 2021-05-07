@@ -35,6 +35,13 @@ var tournoi={};
 var currentmessageage;
 var dev=false;
 
+const guildid ="638782791307231243";
+//'638782791307231243'
+//https://discord.com/api/oauth2/authorize?client_id=493979904308805632&permissions=8&scope=applications.commands%20bot
+//TEST :
+//https://discord.com/api/oauth2/authorize?client_id=499171020033228810&permissions=8&scope=applications.commands%20bot
+
+
 const graphqlclient=new GraphQLClient("https://www.ultimedecathlon.com/graphql")
 const query = gql`query qualified ($episode: Int!, $after: DateTime) {
   darkQualif (episode: $episode, after: $after) {
@@ -282,6 +289,9 @@ bot.on('message', msg => {
 	if (args[0]=="!leave"){
 		leave(msg);
 	}
+	if (args[0]=="!checkPB"){
+		checkPB(msg,args[1],args[2]);
+	}
 	//API TOURNOI
 	if(args[0]=="!register"){
 		//TODO : test nom channel "inscription"
@@ -359,6 +369,12 @@ bot.on('message', msg => {
 					return '';
 				}
 		forceclose(msg);
+	}
+	if (args[0]=="!slowgo"){
+		if(!msg.member.roles.cache.some(r=>[conf.adminRoleName].includes(r.name)) ){
+					return '';
+				}
+		slowgo(msg);
 	}
 	if (args[0]=="!superforceclose"){
 		if(!msg.member.roles.cache.some(r=>[conf.adminRoleName].includes(r.name)) ){
@@ -501,6 +517,50 @@ function unregister(msg){
 	}
 }
 
+function checkPB(msg,tempsenms,lightordark){
+	if(recuplejeu(msg)==""){
+		return;
+	}
+	console.log(recuplejeu(msg));
+	var idjeu=0;
+	//var tournoi_id=msg.channel.parent.name.substring(8);
+	if(lightordark=="light"){
+		idjeu=gamestringtoid(recuplejeu(msg));
+	}
+	if(lightordark=="dark"){
+		idjeu=gamestringtoid(recuplejeu(msg))+10;
+	}
+	if(dev){
+	}else{
+		//console.log("coucou");
+	axios.get("https://dev.ultimedecathlon.com/_/check-pb/discord-"+encodeURIComponent(msg.author.tag)+"/game-"+idjeu+"/time-"+msToTime(tempsenms),{ auth: {
+    username: 'udadm',
+    password: 'Just1Shittypassword'
+	}}).then(function(response){
+		//console.log(response);
+		if(response.data.error){
+			//msg.reply(response.data.message);
+			if(response.data.message=="dark world not unlocked"){
+				return("KO");
+			}
+		}
+		else{
+			if(response.data.pb){
+				if(response.data.previousPb!=null){
+					msg.reply("PB ! (Ancien PB : "+response.data.previousPb+")"); 
+					//Pour soumettre ce temps !Submit");
+				} else {
+					msg.reply("Premier run fini! Félicitations !");
+					//Pour soumettre ce temps !Submit");
+				}
+			}
+		}
+	}).catch(function (error) {
+		console.log(error);
+	});
+	}
+}
+
 function newmatch(){
 	var new_match=JSON.parse(fs.readFileSync('./new_match.json'));
 	return new_match;
@@ -571,7 +631,7 @@ function start(msg,name,id_match){
 		match[channel_id]=newmatch();
 		msg.guild.channels.cache.find(channel => channel.id === channel_id).send("Race créée par : " + msg.member.toString());
 		currentMatch=match[channel_id];
-		currentMatch.players.push(newplayer(msg.author.id,msg.author.tag,false));
+		currentMatch.players.push(newplayer(msg.author.id,msg.author.username,false));
 		currentMatch.jeu=jeu;
 		currentMatch.id=id_match;
 	});
@@ -597,7 +657,7 @@ function start(msg,name,id_match){
 		match[channel_id]=newmatch();
 		msg.guild.channels.cache.find(channel => channel.id === channel_id).send("Race créée par : " + msg.member.toString());
 		currentMatch=match[channel_id];
-		currentMatch.players.push(newplayer(msg.author.id,msg.author.tag,false));
+		currentMatch.players.push(newplayer(msg.author.id,msg.author.username,false));
 		currentMatch.jeu=jeu;
 		currentMatch.id=id_match;
 	});
@@ -644,7 +704,7 @@ function enter(msg){
 			}
 		}); 
 		if(idiot)return;
-		currentMatch.players.push(newplayer(msg.author.id,msg.author.tag,false));
+		currentMatch.players.push(newplayer(msg.author.id,msg.author.username,false));
 		msg.channel.send(msg.member.toString()+" "+"enters the race !");
 	}
 }
@@ -658,7 +718,7 @@ function forceenter(msg){
 			}
 		}); 
 		if(idiot)return;
-		currentMatch.players.push(newplayer(msg.author.id,msg.author.tag,false));
+		currentMatch.players.push(newplayer(msg.author.id,msg.author.username,false));
 }
 
 function leave(msg){
@@ -765,7 +825,7 @@ function go(msg){
 		if(currentMatch.status!=""){
 			return;
 		}
-		var tostart=true;
+		var tostart=currentMatch.players.length>1;
 		currentMatch.players.forEach(function(joueur){
 			tostart=joueur.ready&&tostart;
 		});
@@ -782,6 +842,59 @@ function go(msg){
 			nonready=nonready+"N'oubliez pas de faire !ready";
 			msg.channel.send(nonready,{code:true});
 		}
+	}
+}
+
+function slowgo(msg){
+	var currentMatch = match[msg.channel.id];
+	if (currentMatch!=null){
+		//3 2 1 stock start time as ms.
+		msg.channel.setName(msg.channel.name.replace("\u2705","\uD83D\uDD36"));
+		notify(msg);
+		msg.channel.send("Race is starting in 2 minutes !");
+        var i = 120;
+        var interval = setInterval(function(){
+		if (i==100){
+			msg.channel.send("...1:40...");
+		}
+		if (i==80){
+			msg.channel.send("...1:20...");
+		}
+		if (i==60){
+			msg.channel.send("...60...");
+		}
+		if (i==40){
+			msg.channel.send("...40...");
+		}
+		if (i==30){
+			notify(msg);
+			msg.channel.send("Race is starting in 30s !");
+		}
+		if (i==20){
+
+			msg.channel.send("...20...");
+		}
+		if (i==10){
+			msg.channel.send("...10...");
+		}
+        if (i==3){
+			msg.channel.send("3...");
+        }
+        else if (i==2){
+            msg.channel.send(2);
+        }
+        else if (i==1){
+			msg.channel.send(1);
+        }
+        else if (i==0){
+			msg.channel.send("GO!");
+			var startdatetime = Date.now();
+            currentMatch.startTime=startdatetime;
+			msg.channel.setName(msg.channel.name.replace("\uD83D\uDD36","\uD83D\uDD34"));
+			clearInterval(this);
+		}
+		i--;
+        }, 1000);
 	}
 }
 
@@ -894,6 +1007,7 @@ function dark(msg, time){
 						//recup le jeu
 						var jeu=recuplejeu(msg);
 						if(jeu!=""){
+							checkPB(msg,IGT,"dark")=="KO";
 							if(gamerules["dark"][jeu]["middletime"]<Math.floor(IGT/1000)){
 								msg.reply("Temps au dela de la durée de l'épreuve.");
 								silentforfeit(msg);
@@ -915,7 +1029,7 @@ function dark(msg, time){
 				if(msg.channel.parent!=null&&msg.channel.parent.name.includes("Tournoi-")){
 					//on ajoute le joueur et on rappelle done;
 					forceenter(msg);
-					done(msg,time);
+					dark(msg,time);
 				}
 			}
 			var toclose=true;
@@ -963,6 +1077,7 @@ function light(msg, time){
 								silentforfeit(msg);
 								return;
 							}
+							checkPB(msg,IGT,"light");
 							joueur.score=returnScoreLight(jeu,Math.floor(IGT/1000));
 							msg.channel.send(joueur.name+" is done [light : "+joueur.score+"] in "+msToTime(IGT));
 						}
@@ -979,7 +1094,7 @@ function light(msg, time){
 				if(msg.channel.parent!=null&&msg.channel.parent.name.includes("Tournoi-")){
 					//on ajoute le joueur et on rappelle done;
 					forceenter(msg);
-					done(msg,time);
+					light(msg,time);
 				}
 			}
 			var toclose=true;
@@ -1277,6 +1392,42 @@ function gamenametostring(id){
 	}
 }
 
+function gamestringtoid(jeu){
+	switch(jeu){
+		case "hollow-knight":
+			return 205;
+			break;
+		case "steamworld-dig":
+			return 206;
+			break;
+		case "mintroid":
+			return 207;
+			break;
+		case "ghouls-n-ghosts":
+			return 208;
+			break;
+		case "unworthy":
+			return 209;
+			break;
+		case "hamsterball":
+			return 210;
+			break;
+		case "kururin-squash":
+			return 211;
+			break;
+		case "monkey-ball":
+			return 212;
+			break;
+		case "trials-fusion":
+			return 213;
+			break;
+		case "vectronom":
+			return 214;
+			break;
+	}
+}
+
+
 function toupdate(id,ChampionshipGameResults0){
 	let currentMatch = JSON.parse(fs.readFileSync('./'+id+'.json'));
 	if(ChampionshipGameResults0.submittedTime.stringTime!=currentMatch.submittedTime.stringTime){
@@ -1338,6 +1489,36 @@ function writegame(id,ChampionshipGameResults0){
 		if (err) return console.log(err);
 	});
 }
+
+/* bot.on('ready', async ()=>{
+	console.log("READY");
+	const commands = await bot.api.applications(bot.user.id).guilds(guildid).commands.get();
+	//const commands = await bot.api.applications(bot.user.id).commands.get();
+	console.log(commands);
+	
+	await bot.api.applications(bot.user.id).guilds(guildid).commands.post({
+		data :{
+			name: 'start',
+			description: 'Start a race'
+		}
+	}); 
+	
+	bot.ws.on('INTERACTION_CREATE', async (interaction) =>{
+		const command = interaction.data.name.toLowerCase()
+		console.log(command);
+		
+		if (command==='start'){
+			//do smth
+			client.api.interactions(interaction.id,interaction.token);callback.post({
+				date: {
+					type: 4,
+					data: {
+						content: "Race crée";
+					}
+			});
+		}
+	})
+}); */
 
 bot.on("error", (e) => console.error(e));
 bot.on("warn", (e) => console.warn(e));
