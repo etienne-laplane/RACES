@@ -490,6 +490,7 @@ function donetourney(msg,raceid,TEMPSENMS){
 			msg.reply(response.data.message);
 		}
 	}).catch(function (error) {
+		console.log(error);
 	});
 	}
 	}
@@ -605,6 +606,12 @@ function start(msg,name,id_match){
 			msg.reply("ID du match ?");
 			return;
 		}
+		console.log(getGameName(name));
+		if(getGameName(name)==""||getGameName(name)==undefined){
+			msg.reply("jeu?");
+			return;
+		}
+		
 		//check race.
 		var tournoi_id=msg.channel.parent.name.substring(8);
 		if(dev){
@@ -1020,8 +1027,13 @@ function dark(msg, time){
 							return;
 						}
 						joueur.result=IGT;
-						donetourney(msg,currentMatch.id+1,IGT);
-					}else {return;}
+						var id_dark = parseInt(currentMatch.id);
+						id_dark++;
+						donetourney(msg,id_dark,IGT);
+					}else {
+						dark(msg,msToTime(RTAinMS));
+						return;
+					}
 				}
 			});
 			if(!found){
@@ -1086,7 +1098,10 @@ function light(msg, time){
 						}
 						joueur.result=IGT;
 						donetourney(msg,currentMatch.id,IGT);
-					}else {return;}
+					}else {
+						light(msg,msToTime(RTAinMS));
+						return;
+					}
 				}
 			});
 			if(!found){
@@ -1284,7 +1299,7 @@ function msToTime(s) {
 }
 
 function getGameName(name){
-	return gamelist[name.toLowerCase().replace(/\s/g, '')+""];
+	return gamelist[name.toLowerCase().replace(/[^a-z0-9]/gmi,"").replace(/\s+/g,"")+""];
 }
 
 function channelGenerateName(jeu){
@@ -1530,6 +1545,7 @@ if(dev){
 }else{
 io.on('connection', (socket) => {
   console.log('a user connected');
+  io.emit('news','Voici un nouvel élément envoyé par le serveur');
 });
 
 server.listen(3000, () => {
