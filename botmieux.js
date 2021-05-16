@@ -1254,6 +1254,13 @@ function closeMatch(msg){
 			channeltosend=msg.guild.channels.cache.find(channel => channel.name === 'race_results');
 			channeltosend.send(""+race_results);
 		}
+		var race_stats=printStats(msg,currentMatch);
+		if(race_stats!=""){
+			//TODO: SendPB's
+			
+			channeltosend=msg.guild.channels.cache.find(channel => channel.name === 'racestats');
+			channeltosend.send(""+race_stats);
+		}
 		// var promises=[];
 		// currentMatch.players.forEach(function(joueur){
 			// promises.push(msg.guild.members.fetch(joueur.id).then(user=>{return user}));
@@ -1348,6 +1355,43 @@ function printResult(msg,match){
 	}
 	else{
 		toReturn=toReturn+"```"
+	}
+	return toReturn;
+}
+
+function printStats(msg,match){
+	var durAver=0;
+	var scoreAver=0;
+	var forfeitcount=0;
+	var i=0;
+	var median="NA";
+	match.players.forEach(function(joueur){
+		if(joueur.result!=0){
+			i++;
+			durAver=durAver+joueur.result;
+			scoreAver=scoreAver+joueur.score;
+		}else{
+			forfeitcount++;
+		}
+	});
+	if(i>2){
+		var p=0:
+		match.players.forEach(function(joueur){
+		if(joueur.result!=0){
+			i++;
+			if(i>=p/2&&i<p/2+1){
+				median=joueur.score;
+			}
+		}
+	});
+	}
+	var toReturn="";
+	if(i!=0){
+		toReturn="```"+"\nNombre de joueurs:"+i+
+		"\nScore moyen:"+(scoreAver/i)+
+		"\nScore median:"+median+
+		"\nNombre de forfaits:"+forfeitcount;
+		
 	}
 	return toReturn;
 }
