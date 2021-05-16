@@ -1387,12 +1387,14 @@ function printStats(msg,match){
 	});
 	}
 	var toReturn="";
+	if(match.jeu!=""&&match.jeu!=undefined){
 	if(i!=0){
-		toReturn="```"+"\nNombre de joueurs: "+i+
+		toReturn="```"+match.jeu+"\nNombre de joueurs: "+i+
 		"\nScore moyen: "+(scoreAver/i)+
 		"\nScore median: "+median+
 		"\nNombre de forfaits: "+forfeitcount;+"```"
 	
+	}
 	}
 	return toReturn;
 }
