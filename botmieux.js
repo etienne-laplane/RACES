@@ -1375,7 +1375,7 @@ function printStats(msg,match){
 		}
 	});
 	if(i>2){
-		var p=0:
+		var p=0;
 		match.players.forEach(function(joueur){
 		if(joueur.result!=0){
 			i++;
