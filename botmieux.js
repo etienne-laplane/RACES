@@ -1374,13 +1374,12 @@ function printStats(msg,match){
 			forfeitcount++;
 		}
 	});
-	i=0;
 	if(i>2){
 		var p=0;
 		match.players.forEach(function(joueur){
 		if(joueur.result!=0){
-			i++;
-			if(i>=p/2&&i<p/2+1){
+			p++;
+			if(p>=i/2&&p<i/2+1){
 				median=joueur.score;
 			}
 		}
