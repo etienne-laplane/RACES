@@ -1374,6 +1374,7 @@ function printStats(msg,match){
 			forfeitcount++;
 		}
 	});
+	i=0;
 	if(i>2){
 		var p=0;
 		match.players.forEach(function(joueur){
@@ -1387,11 +1388,11 @@ function printStats(msg,match){
 	}
 	var toReturn="";
 	if(i!=0){
-		toReturn="```"+"\nNombre de joueurs:"+i+
-		"\nScore moyen:"+(scoreAver/i)+
-		"\nScore median:"+median+
-		"\nNombre de forfaits:"+forfeitcount;
-		
+		toReturn="```"+"\nNombre de joueurs: "+i+
+		"\nScore moyen: "+(scoreAver/i)+
+		"\nScore median: "+median+
+		"\nNombre de forfaits: "+forfeitcount;+"```"
+	
 	}
 	return toReturn;
 }
