@@ -292,6 +292,13 @@ bot.on('message', msg => {
 	if (args[0]=="!checkPB"){
 		checkPB(msg,args[1],args[2]);
 	}
+	if (args[0]=="!submitPB"){
+		console.log("submlità");
+		submitPB(msg,args[1],args[2]);
+	}
+	if (args[0]=="!Submit"||args[0]=="!submit"){
+		submitRacePB(msg);
+	}
 	//API TOURNOI
 	if(args[0]=="!register"){
 		//TODO : test nom channel "inscription"
@@ -517,6 +524,79 @@ function unregister(msg){
 	});
 	}
 }
+function submitRacePB(msg){
+	var currentMatch = match[msg.channel.id];
+	if (currentMatch!=null){
+		currentMatch.players.forEach(function(joueur){
+			if(joueur.id==msg.author.id){
+				if(joueur.result!=null&joueur.result>0){
+					if(joueur.lightordark!=undefined){
+						console.log("undefined");
+						submitPB(msg,joueur.result,joueur.lightordark);
+					}
+				}
+			}
+		});
+	}
+}
+
+function setlightordark(msg,lightordark){
+	console.log("debutset");
+	var currentMatch = match[msg.channel.id];
+	if (currentMatch!=null){
+		currentMatch.players.forEach(function(joueur){
+			if(joueur.id==msg.author.id){
+				console.log("set");
+				joueur.lightordark=lightordark;
+				
+			}
+		});
+	}
+}
+
+function submitPB(msg,tempsenms, lightordark){
+	console.log("CACA");
+	if(lightordark!="light"&&lightordark!="dark"){
+		console.log("ça marche pas");
+		console.log(lightordark);
+		return;
+	}
+	console.log("debut");
+	if(recuplejeu(msg)==""){
+		console.log("pagjeu");
+		return;
+	}
+	console.log(recuplejeu(msg));
+	var idjeu=0;
+	//var tournoi_id=msg.channel.parent.name.substring(8);
+	if(lightordark=="light"){
+		idjeu=gamestringtoid(recuplejeu(msg));
+	}
+	if(lightordark=="dark"){
+		idjeu=gamestringtoid(recuplejeu(msg))+10;
+	}
+	if(dev){
+		console.log("dev");
+	}else{
+		//console.log("coucou");
+	axios.get("https://www.ultimedecathlon.com/_/register-pb/discord-"+encodeURIComponent(msg.author.tag)+"/game-"+idjeu+"/time-"+msToTime(tempsenms),{ auth: {
+    username: 'udadm',
+    password: 'Just1Shittypassword'
+	}}).then(function(response){
+		//console.log(response);
+		if(response.data.error){
+			console.log(response.data.message);
+		}
+		else{
+					msg.reply(response.data.message); 
+					//Pour soumettre ce temps !Submit");
+
+		}
+	}).catch(function (error) {
+		console.log(error);
+	});
+	}
+}
 
 function checkPB(msg,tempsenms,lightordark){
 	if(recuplejeu(msg)==""){
@@ -547,9 +627,9 @@ function checkPB(msg,tempsenms,lightordark){
 		}
 		else{
 			if(response.data.pb){
+				setlightordark(msg,lightordark);
 				if(response.data.previousPb!=null){
-					msg.reply("PB ! (Ancien PB : "+response.data.previousPb+")"); 
-					//Pour soumettre ce temps !Submit");
+					msg.reply("PB ! (Ancien PB : "+response.data.previousPb+")"+"Pour soumettre ce temps !Submit");
 				} else {
 					msg.reply("Premier run fini! Félicitations !");
 					//Pour soumettre ce temps !Submit");
@@ -1364,7 +1444,7 @@ function printStats(msg,match){
 	var scoreAver=0;
 	var forfeitcount=0;
 	var i=0;
-	var median="NA";
+	var median="N/A";
 	match.players.forEach(function(joueur){
 		if(joueur.result!=0){
 			i++;
@@ -1391,7 +1471,7 @@ function printStats(msg,match){
 		toReturn="```"+match.jeu+"\nNombre de joueurs: "+i+
 		"\nScore moyen: "+(scoreAver/i)+
 		"\nScore median: "+median+
-		"\nNombre de forfaits: "+forfeitcount;+"```"
+		"\nNombre de forfaits: "+forfeitcount+"```";
 	
 	}
 	}
@@ -1594,7 +1674,7 @@ io.on('connection', (socket) => {
   io.emit('news','Voici un nouvel élément envoyé par le serveur');
 });
 
-server.listen(3000, () => {
+/* server.listen(3000, () => {
   console.log('listening on *:3000');
-});
+}); */
 }
