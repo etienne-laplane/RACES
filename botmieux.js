@@ -1329,17 +1329,13 @@ function closeMatch(msg){
 		//résumé dans race_result
 		var race_results=printResult(msg,currentMatch);
 		if(race_results!=""){
-			//TODO: SendPB's
-			
 			channeltosend=msg.guild.channels.cache.find(channel => channel.name === 'race_results');
 			channeltosend.send(""+race_results);
 		}
 		var race_stats=printStats(msg,currentMatch);
 		if(race_stats!=""){
-			//TODO: SendPB's
-			
 			channeltosend=msg.guild.channels.cache.find(channel => channel.name === 'racestats');
-			channeltosend.send(""+race_stats);
+			channeltosend.send(""+race_stats,{code:true});
 		}
 		// var promises=[];
 		// currentMatch.players.forEach(function(joueur){
@@ -1468,10 +1464,10 @@ function printStats(msg,match){
 	var toReturn="";
 	if(match.jeu!=""&&match.jeu!=undefined){
 	if(i!=0){
-		toReturn="```"+match.jeu+"\nNombre de joueurs: "+i+
+		toReturn=match.jeu+"\nNombre de joueurs: "+i+
 		"\nScore moyen: "+(scoreAver/i)+
 		"\nScore median: "+median+
-		"\nNombre de forfaits: "+forfeitcount+"```";
+		"\nNombre de forfaits: "+forfeitcount;
 	
 	}
 	}
