@@ -17,8 +17,8 @@
 			"middletime": "1080"
 		},
 		"unworthy": {
-			"besttime": "360",
-			"middletime": "2160"
+			"besttime": "240",
+			"middletime": "2040"
 		},
 		"hamsterball": {
 			"besttime": "210",
@@ -38,7 +38,7 @@
 		},
 		"vectronom": {
 			"besttime": "480",
-			"middletime": "1200"
+			"middletime": "1320"
 		}
 	},
 	"dark": {
@@ -55,28 +55,28 @@
 			"middletime": "1124"
 		},
 		"ghouls-n-ghosts": {
-			"besttime": "480",
-			"middletime": "1705"
+			"besttime": "510",
+			"middletime": "1919"
 		},
 		"unworthy": {
-			"besttime": "1620",
-			"middletime": "3825"
+			"besttime": "1470",
+			"middletime": "3613"
 		},
 		"hamsterball": {
 			"besttime": "585",
 			"middletime": "1351"
 		},
 		"kururin-squash": {
-			"besttime": "1860",
-			"middletime": "3697"
+			"besttime": "1920",
+			"middletime": "4125"
 		},
 		"monkey-ball": {
 			"besttime": "600",
-			"middletime": "1335"
+			"middletime": "1580"
 		},
 		"trials-fusion": {
 			"besttime": "1200",
-			"middletime": "2670"
+			"middletime": "2915"
 		},
 		"vectronom": {
 			"besttime": "1035",
