@@ -43,8 +43,8 @@
 	},
 	"dark": {
 		"hollow-knight": {
-			"besttime": "2310",
-			"middletime": "4944"
+			"besttime": "2400",
+			"middletime": "5095"
 		},
 		"steamworld-dig": {
 			"besttime": "1800",
@@ -55,28 +55,28 @@
 			"middletime": "1124"
 		},
 		"ghouls-n-ghosts": {
-			"besttime": "510",
-			"middletime": "1919"
+			"besttime": "540",
+			"middletime": "2010"
 		},
 		"unworthy": {
 			"besttime": "1470",
 			"middletime": "3613"
 		},
 		"hamsterball": {
-			"besttime": "585",
-			"middletime": "1351"
+			"besttime": "600",
+			"middletime": "1335"
 		},
 		"kururin-squash": {
-			"besttime": "1920",
-			"middletime": "4125"
+			"besttime": "1980",
+			"middletime": "4062"
 		},
 		"monkey-ball": {
-			"besttime": "600",
-			"middletime": "1580"
+			"besttime": "630",
+			"middletime": "1671"
 		},
 		"trials-fusion": {
 			"besttime": "1200",
-			"middletime": "2915"
+			"middletime": "3649"
 		},
 		"vectronom": {
 			"besttime": "1035",
